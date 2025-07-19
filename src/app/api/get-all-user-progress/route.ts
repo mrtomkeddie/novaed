@@ -1,3 +1,4 @@
+'use server';
 
 import { NextResponse } from 'next/server';
 import { getAllUserProgressFlow } from '@/ai/flows/get-all-user-progress';

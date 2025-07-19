@@ -1,3 +1,4 @@
+'use server';
 
 import { NextResponse } from 'next/server';
 import { getAITutorFeedback } from '@/ai/flows/get-ai-tutor-feedback';
