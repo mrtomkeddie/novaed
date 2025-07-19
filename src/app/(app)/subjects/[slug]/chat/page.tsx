@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
@@ -62,8 +63,10 @@ export default function ChatPage() {
             body: JSON.stringify({ userId: user.uid, subjectId: subject.id }),
           });
 
-          if (!response.ok) {
-            throw new Error('Failed to fetch user progress');
+          // Even if the response is not "ok" (e.g., 404), we can still proceed
+          // by assuming no progress exists. We'll only throw for server errors.
+          if (response.status >= 500) {
+            throw new Error(`Server error: ${response.statusText}`);
           }
           
           const lastProgress = await response.json();
@@ -243,9 +246,14 @@ export default function ChatPage() {
         const todayStr = new Date().toISOString().split('T')[0];
         const dailyProgress = localStorage.getItem('dailyProgress');
         if (dailyProgress) {
-            const { date, index } = JSON.parse(dailyProgress);
-            if (date === todayStr) {
-                localStorage.setItem('dailyProgress', JSON.stringify({ date: todayStr, index: index + 1 }));
+            try {
+                const { date, index } = JSON.parse(dailyProgress);
+                if (date === todayStr) {
+                    localStorage.setItem('dailyProgress', JSON.stringify({ date: todayStr, index: index + 1 }));
+                }
+            } catch (e) {
+                // If localStorage is corrupt, reset it
+                localStorage.setItem('dailyProgress', JSON.stringify({ date: todayStr, index: 0 }));
             }
         }
         router.push('/dashboard');
