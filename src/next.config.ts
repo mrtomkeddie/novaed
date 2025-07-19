@@ -2,7 +2,7 @@
 import type {NextConfig} from 'next';
 
 const nextConfig: NextConfig = {
-  output: 'standalone', // Required for Vercel deployment
+  output: 'standalone', // Required for Firebase Hosting
   typescript: {
     ignoreBuildErrors: true,
   },
@@ -10,7 +10,8 @@ const nextConfig: NextConfig = {
     ignoreDuringBuilds: true,
   },
   experimental: {
-    esmExternals: 'loose', // Allows handling of Genkit & OpenTelemetry dependencies
+    // This is required for Genkit to work correctly.
+    esmExternals: 'loose',
   },
   images: {
     remotePatterns: [
@@ -23,24 +24,13 @@ const nextConfig: NextConfig = {
     ],
   },
   webpack: (config, { isServer }) => {
-    // Prevent Vercel build errors from server-only modules
-    config.resolve.fallback = {
-      ...config.resolve.fallback,
-      fs: false,
-      path: false,
-      os: false,
-    };
-
-    // Exclude problematic server-only modules from the client bundle
+    // Exclude specific server-only modules from the client bundle to prevent build errors.
     if (!isServer) {
       config.externals = [
         ...(config.externals || []),
-        '@opentelemetry/exporter-jaeger',
-        '@genkit-ai/firebase',
         'firebase-admin',
       ];
     }
-
     return config;
   },
 };

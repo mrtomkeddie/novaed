@@ -20,21 +20,25 @@ type DailyLesson = {
     subject: Subject | undefined;
 }
 
-interface DashboardClientProps {
-    greeting: string;
-}
-
-export function DashboardClient({ greeting }: DashboardClientProps) {
+export function DashboardClient() {
   const { user } = useAuth();
   const [todaysLessons, setTodaysLessons] = useState<DailyLesson[]>([]);
   const [currentLessonIndex, setCurrentLessonIndex] = useState(0);
   const [isClient, setIsClient] = useState(false);
+  const [greeting, setGreeting] = useState("Welcome");
 
   const welcomeName = user?.displayName || user?.email?.split('@')[0] || 'friend';
   
   useEffect(() => {
     // This effect runs only on the client, after initial render
     setIsClient(true);
+
+    const returnGreetings = [
+      "Welcome back", "Great to see you again", "Let's get learning",
+      "Ready for a new challenge?", "Time for another adventure",
+    ];
+    setGreeting(returnGreetings[Math.floor(Math.random() * returnGreetings.length)]);
+
   }, []);
 
 

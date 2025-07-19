@@ -18,8 +18,8 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
   return await getUserProfileFlow({ userId });
 }
 
-export async function saveUserProgress(userId: string, summary: GenerateLessonSummaryOutput): Promise<void> {
-    await logProgress({ userId, summary });
+export async function saveUserProgress(userId: string, summary: GenerateLessonSummaryOutput): Promise<{success: boolean, error?: string}> {
+    return await logProgress({ userId, summary });
 }
 
 export async function getLastUserProgress(userId: string, subjectId: string): Promise<GenerateLessonSummaryOutput | null> {
