@@ -1,0 +1,79 @@
+diff --git a/node_modules/genkit/lib/tracing.js b/node_modules/genkit/lib/tracing.js
+index 7215f93..a572c60 100644
+--- a/node_modules/genkit/lib/tracing.js
++++ b/node_modules/genkit/lib/tracing.js
+@@ -19,17 +19,25 @@
+  * limitations under the License.
+  */
+ Object.defineProperty(exports, "__esModule", { value: true });
+-exports.registerInstrumentation = exports.getTracer = exports.getTracingConfig = exports.setTracingConfig = exports.__hardResetTracingConfigForTesting = exports.__inDev = void 0;
++exports.registerInstrumentation = exports.getTracer = exports.getTracingConfig = exports.setTracingConfig = exports.__hardResetTracingConfigForTesting = void 0;
+ const opentelemetry = require("@opentelemetry/api");
+ const async_hooks_1 = require("@opentelemetry/instrumentation/build/src/platform/node/async-hooks");
+-const sdk_node_1 = require("@opentelemetry/sdk-node");
+ const context_1 = require("./context");
+ const utils_1 = require("./utils");
+ // Whether we're in a dev environment.
+-exports.__inDev = process.env.GENKIT_ENV === 'dev';
++const __inDev = process.env.GENKIT_ENV === 'dev';
+ // Tracing is enabled by default, unless explicitly disabled.
+ let tracingConfig = {
+     enabled: process.env.GENKIT_TRACE_STORE !== 'none',
+ };
+ function __hardResetTracingConfigForTesting() {
+     tracingConfig = { enabled: process.env.GENKIT_TRACE_STORE !== 'none' };
++}
++exports.__hardResetTracingConfigForTesting = __hardResetTracingConfigForTesting;
++function setTracingConfig(config) {
++    tracingConfig = config;
++}
++exports.setTracingConfig = setTracingConfig;
++function getTracingConfig() {
++    return tracingConfig;
+ }
+-exports.__hardResetTracingConfigForTesting = __hardResetTracingConfigForTesting;
+-function setTracingConfig(config) {
+-    tracingConfig = config;
+-}
+-exports.setTracingConfig = setTracingConfig;
+-function getTracingConfig() {
+-    return tracingConfig;
+-}
+-exports.getTracingConfig = getTracingConfig;
+ let registered = false;
+ let tracer;
+ function getTracer() {
+@@ -53,30 +61,6 @@
+     }
+ }
+ exports.registerInstrumentation = registerInstrumentation;
+-let sdk;
+-function registerInstrumentation(instrumentations) {
+-    if (sdk) {
+-        return;
+-    }
+-    if (exports.__inDev ||
+-        process.env.GENKIT_TRACE_STORE === 'firebase' ||
+-        process.env.GENKIT_TRACE_STORE === 'google-cloud') {
+-        let traceExporter;
+-        if (process.env.GENKIT_TRACE_STORE === 'google-cloud') {
+-            traceExporter = new (require('@google-cloud/opentelemetry-cloud-trace-exporter').CloudTraceExporter)();
+-        }
+-        else {
+-            traceExporter = new (require('@genkit-ai/firebase/trace-store')
+-                .FirestoreTraceExporter)();
+-        }
+-        sdk = new sdk_node_1.NodeSDK({
+-            traceExporter,
+-            instrumentations,
+-        });
+-        sdk.start();
+-    }
+-}
+-exports.registerInstrumentation = registerInstrumentation;
+ process.on('beforeExit', async () => {
+-    await sdk?.shutdown();
++    // Placeholder for any SDK shutdown logic.
+ });
+ //# sourceMappingURL=tracing.js.map
+\ No newline at end of file
