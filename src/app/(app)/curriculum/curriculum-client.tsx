@@ -45,19 +45,25 @@ export function CurriculumClient() {
 
           const progressData: GenerateLessonSummaryOutput[] = await response.json();
           
-          const progressMap = new Map(progressData.map(p => [p.topic_id, p]));
+          if (progressData && progressData.length > 0) {
+            const progressMap = new Map(progressData.map(p => [p.topic_id, p]));
 
-          const subjectsWithProgress = staticSubjects.map(subject => ({
-            ...subject,
-            lessons: subject.lessons.map(lesson => ({
-              ...lesson,
-              completed: progressMap.has(lesson.id),
-            })),
-          }));
+            const subjectsWithProgress = staticSubjects.map(subject => ({
+              ...subject,
+              lessons: subject.lessons.map(lesson => ({
+                ...lesson,
+                completed: progressMap.has(lesson.id),
+              })),
+            }));
+            setSubjects(subjectsWithProgress);
+          } else {
+            // No progress data, use static subjects
+            setSubjects(staticSubjects);
+          }
           
-          setSubjects(subjectsWithProgress);
         } catch (error) {
           console.error("Failed to fetch or merge progress:", error);
+          // On error, fallback to static subjects
           setSubjects(staticSubjects);
         } finally {
           setIsLoading(false);

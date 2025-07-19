@@ -27,15 +27,14 @@ interface ProgressClientProps {
 export function ProgressClient({ initialProgress }: ProgressClientProps) {
   const { user } = useAuth();
   const [progressData, setProgressData] = useState<GenerateLessonSummaryOutput[]>(initialProgress);
-  const [isLoading, setIsLoading] = useState(initialProgress.length === 0);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedSubject, setSelectedSubject] = useState<string>('all');
   const [availableSubjects, setAvailableSubjects] = useState<string[]>([]);
 
 
   useEffect(() => {
-    // Only fetch if initial data is empty and user is available
-    if (initialProgress.length === 0 && user) {
+    if (user) {
       const fetchProgress = async () => {
         setIsLoading(true);
         try {
@@ -65,7 +64,7 @@ export function ProgressClient({ initialProgress }: ProgressClientProps) {
     } else {
         setIsLoading(false);
     }
-  }, [user, initialProgress]);
+  }, [user]);
 
   useEffect(() => {
     if(progressData.length > 0) {

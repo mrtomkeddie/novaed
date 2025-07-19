@@ -66,18 +66,21 @@ export default function ChatPage() {
           if (!response.ok) {
             throw new Error('Failed to fetch user progress');
           }
-
+          
           const lastProgress = await response.json();
           let topic: Lesson | null = null;
 
           if (lastProgress && lastProgress.topic_id) {
             const lastTopicIndex = subject.lessons.findIndex(l => l.id === lastProgress.topic_id);
             if (lastTopicIndex > -1 && lastTopicIndex + 1 < subject.lessons.length) {
+              // User has completed the last lesson, move to the next one
               topic = subject.lessons[lastTopicIndex + 1];
             } else {
+              // User has completed all lessons or is on the last one, start from the first uncompleted or first overall
               topic = subject.lessons.find(l => !l.completed) || subject.lessons[0];
             }
           } else {
+            // No progress for this subject, start from the first lesson
             topic = subject.lessons.find(l => !l.completed) || subject.lessons[0];
           }
           
