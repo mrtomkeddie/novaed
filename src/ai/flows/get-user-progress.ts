@@ -17,6 +17,7 @@ function initializeFirebaseAdmin() {
     if (admin.apps.length > 0) {
         return admin.app();
     }
+    // Make sure to use the correct project ID from environment variables.
     return admin.initializeApp({
         credential: admin.credential.applicationDefault(),
         projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
@@ -32,8 +33,8 @@ const GetAllUserProgressInputSchema = z.object({
   userId: z.string(),
 });
 
-// Using z.any() because the structure is already defined by GenerateLessonSummaryOutput
-const ProgressOutputSchema = z.any(); 
+// The schema should be nullable to handle cases where no progress is found.
+const ProgressOutputSchema = z.any().nullable(); 
 
 const getUserProgressFlow = ai.defineFlow(
   {
@@ -46,7 +47,10 @@ const getUserProgressFlow = ai.defineFlow(
     const db = admin.firestore();
 
     const subject = subjects.find(s => s.id === subjectId);
-    if (!subject) return null;
+    if (!subject) {
+        console.warn(`Subject not found for ID: ${subjectId}`);
+        return null;
+    }
 
     const snapshot = await db.collection('users').doc(userId).collection('progress')
       .where('subject', '==', subject.name)
@@ -58,7 +62,13 @@ const getUserProgressFlow = ai.defineFlow(
       return null;
     }
     
-    return snapshot.docs[0].data() as GenerateLessonSummaryOutput;
+    const docData = snapshot.docs[0].data();
+    // Manually handle Firestore Timestamp conversion if it exists.
+    if (docData.date && docData.date.toDate) {
+        docData.date = docData.date.toDate().toISOString();
+    }
+
+    return docData as GenerateLessonSummaryOutput;
   }
 );
 
@@ -66,19 +76,27 @@ const getAllUserProgressFlow = ai.defineFlow(
     {
         name: 'getAllUserProgressFlow',
         inputSchema: GetAllUserProgressInputSchema,
-        outputSchema: z.array(ProgressOutputSchema),
+        outputSchema: z.array(z.any()),
     },
     async ({ userId }) => {
         initializeFirebaseAdmin();
         const db = admin.firestore();
         
-        const snapshot = await db.collection('users').doc(userId).collection('progress').get();
+        const snapshot = await db.collection('users').doc(userId).collection('progress')
+            .orderBy('date', 'desc')
+            .get();
         
         if (snapshot.empty) {
             return [];
         }
 
-        return snapshot.docs.map(doc => doc.data() as GenerateLessonSummaryOutput);
+        return snapshot.docs.map(doc => {
+            const data = doc.data();
+            if (data.date && data.date.toDate) {
+                data.date = data.date.toDate().toISOString();
+            }
+            return data;
+        }) as GenerateLessonSummaryOutput[];
     }
 );
 
