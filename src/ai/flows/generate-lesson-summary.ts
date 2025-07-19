@@ -23,7 +23,7 @@ const GenerateLessonSummaryInputSchema = z.object({
 });
 
 // Define the output schema for the lesson summary.
-export const GenerateLessonSummaryOutputSchema = z.object({
+const GenerateLessonSummaryOutputSchema = z.object({
   subject: z.string().describe('The subject of the lesson.'),
   topic_title: z.string().describe('The title of the lesson topic.'),
   topic_id: z.string().describe('The unique ID of the topic.'),
