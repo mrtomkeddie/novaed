@@ -92,6 +92,7 @@ const getAllUserProgressFlow = ai.defineFlow(
 
         return snapshot.docs.map(doc => {
             const data = doc.data();
+            // Manually handle Firestore Timestamp conversion if it exists.
             if (data.date && data.date.toDate) {
                 data.date = data.date.toDate().toISOString();
             }
