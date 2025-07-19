@@ -1,7 +1,7 @@
 'use server';
 
 import { NextResponse } from 'next/server';
-import { getAllUserProgressFlow } from '@/ai/flows/get-all-user-progress';
+import { getAllUserProgressFlow } from '@/ai/flows/get-user-progress';
 
 export async function POST(request: Request) {
   try {
