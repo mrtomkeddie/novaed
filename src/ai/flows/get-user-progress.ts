@@ -36,12 +36,14 @@ const GetAllUserProgressInputSchema = z.object({
 // The schema should be nullable to handle cases where no progress is found.
 const ProgressOutputSchema = z.any().nullable(); 
 
-// Helper function to safely serialize Firestore data
-function serializeFirestoreDoc(doc: admin.firestore.DocumentData | undefined): GenerateLessonSummaryOutput | null {
-    if (!doc) return null;
+// Helper function to safely serialize Firestore data, especially Timestamps.
+function serializeFirestoreDoc(docData: admin.firestore.DocumentData | undefined): GenerateLessonSummaryOutput | null {
+    if (!docData) return null;
     
-    const data = doc;
-    // Safely convert Firestore Timestamp to ISO string
+    const data = { ...docData };
+    
+    // Safely convert Firestore Timestamp to ISO string.
+    // This is the critical step to prevent server serialization errors.
     if (data.date && typeof data.date.toDate === 'function') {
         data.date = data.date.toDate().toISOString();
     }
