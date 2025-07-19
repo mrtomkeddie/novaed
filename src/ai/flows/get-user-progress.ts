@@ -1,8 +1,9 @@
+
 'use server';
 /**
  * @fileOverview Manages fetching user progress from Firestore.
- * - getUserProgress: Fetches the most recent progress for a specific subject.
- * - getAllUserProgressFlow: Fetches all progress records for a user.
+ * - getLastUserProgress: Fetches the most recent progress for a specific subject.
+ * - getAllUserProgress: Fetches all progress records for a user.
  */
 
 import {ai} from '@/ai/genkit';
@@ -34,7 +35,7 @@ const GetAllUserProgressInputSchema = z.object({
 // Using z.any() because the structure is already defined by GenerateLessonSummaryOutput
 const ProgressOutputSchema = z.any(); 
 
-export const getUserProgress = ai.defineFlow(
+const getUserProgressFlow = ai.defineFlow(
   {
     name: 'getUserProgress',
     inputSchema: GetUserProgressInputSchema,
@@ -61,7 +62,7 @@ export const getUserProgress = ai.defineFlow(
   }
 );
 
-export const getAllUserProgressFlow = ai.defineFlow(
+const getAllUserProgressFlow = ai.defineFlow(
     {
         name: 'getAllUserProgressFlow',
         inputSchema: GetAllUserProgressInputSchema,
@@ -80,3 +81,11 @@ export const getAllUserProgressFlow = ai.defineFlow(
         return snapshot.docs.map(doc => doc.data() as GenerateLessonSummaryOutput);
     }
 );
+
+export async function getLastUserProgress(input: z.infer<typeof GetUserProgressInputSchema>): Promise<GenerateLessonSummaryOutput | null> {
+    return getUserProgressFlow(input);
+}
+
+export async function getAllUserProgress(input: z.infer<typeof GetAllUserProgressInputSchema>): Promise<GenerateLessonSummaryOutput[]> {
+    return getAllUserProgressFlow(input);
+}

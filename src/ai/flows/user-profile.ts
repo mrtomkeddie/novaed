@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview Manages user profile data in Firestore.
@@ -35,7 +36,8 @@ const SaveUserProfileInputSchema = z.object({
   profileData: UserProfileSchema,
 });
 
-export const getUserProfile = ai.defineFlow(
+
+const getUserProfileFlow = ai.defineFlow(
   {
     name: 'getUserProfile',
     inputSchema: GetUserProfileInputSchema,
@@ -53,7 +55,7 @@ export const getUserProfile = ai.defineFlow(
   }
 );
 
-export const saveUserProfile = ai.defineFlow(
+const saveUserProfileFlow = ai.defineFlow(
     {
         name: 'saveUserProfile',
         inputSchema: SaveUserProfileInputSchema,
@@ -69,3 +71,11 @@ export const saveUserProfile = ai.defineFlow(
         }, { merge: true });
     }
 );
+
+export async function getUserProfile(input: z.infer<typeof GetUserProfileInputSchema>): Promise<UserProfile | null> {
+    return getUserProfileFlow(input);
+}
+
+export async function saveUserProfile(input: z.infer<typeof SaveUserProfileInputSchema>): Promise<void> {
+    return saveUserProfileFlow(input);
+}

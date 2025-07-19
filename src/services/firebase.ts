@@ -5,7 +5,7 @@ import type { GenerateLessonSummaryOutput } from '@/ai/flows/generate-lesson-sum
 import type { UserProfile } from '@/types';
 import { logProgress } from '@/ai/flows/log-progress';
 import { getUserProfile as getUserProfileFlow, saveUserProfile as saveUserProfileFlow } from '@/ai/flows/user-profile';
-import { getAllUserProgress as getAllUserProgressFlow, getUserProgress as getUserProgressFlow } from '@/ai/flows/get-user-progress';
+import { getAllUserProgress as getAllUserProgressFlow, getLastUserProgress as getUserProgressFlow } from '@/ai/flows/get-user-progress';
 
 // This file now acts as a simple bridge between your server components/API routes and the Genkit flows.
 // This keeps a clean separation of concerns.

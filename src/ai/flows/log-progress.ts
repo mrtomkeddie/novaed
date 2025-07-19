@@ -32,7 +32,7 @@ const LogProgressOutputSchema = z.object({
   error: z.string().optional(),
 });
 
-export const logProgress = ai.defineFlow(
+const logProgressFlow = ai.defineFlow(
   {
     name: 'logProgress',
     inputSchema: LogProgressInputSchema,
@@ -58,3 +58,7 @@ export const logProgress = ai.defineFlow(
     }
   }
 );
+
+export async function logProgress(input: z.infer<typeof LogProgressInputSchema>): Promise<z.infer<typeof LogProgressOutputSchema>> {
+  return logProgressFlow(input);
+}
