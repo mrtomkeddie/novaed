@@ -36,6 +36,20 @@ const GetAllUserProgressInputSchema = z.object({
 // The schema should be nullable to handle cases where no progress is found.
 const ProgressOutputSchema = z.any().nullable(); 
 
+// Helper function to safely serialize Firestore data
+function serializeFirestoreDoc(doc: admin.firestore.DocumentData | undefined): GenerateLessonSummaryOutput | null {
+    if (!doc) return null;
+    
+    const data = doc;
+    // Safely convert Firestore Timestamp to ISO string
+    if (data.date && typeof data.date.toDate === 'function') {
+        data.date = data.date.toDate().toISOString();
+    }
+    
+    return data as GenerateLessonSummaryOutput;
+}
+
+
 const getUserProgressFlow = ai.defineFlow(
   {
     name: 'getUserProgress',
@@ -62,13 +76,8 @@ const getUserProgressFlow = ai.defineFlow(
       return null;
     }
     
-    const docData = snapshot.docs[0].data();
-    // Manually handle Firestore Timestamp conversion if it exists.
-    if (docData.date && docData.date.toDate) {
-        docData.date = docData.date.toDate().toISOString();
-    }
-
-    return docData as GenerateLessonSummaryOutput;
+    // Serialize the document data before returning
+    return serializeFirestoreDoc(snapshot.docs[0].data());
   }
 );
 
@@ -90,14 +99,8 @@ const getAllUserProgressFlow = ai.defineFlow(
             return [];
         }
 
-        return snapshot.docs.map(doc => {
-            const data = doc.data();
-            // Manually handle Firestore Timestamp conversion if it exists.
-            if (data.date && data.date.toDate) {
-                data.date = data.date.toDate().toISOString();
-            }
-            return data;
-        }) as GenerateLessonSummaryOutput[];
+        // Serialize each document in the array
+        return snapshot.docs.map(doc => serializeFirestoreDoc(doc.data())).filter(Boolean) as GenerateLessonSummaryOutput[];
     }
 );
 
