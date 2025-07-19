@@ -1,12 +1,12 @@
 'use server';
 
 import { NextResponse } from 'next/server';
-import { getUserProgress as getUserProgressFlow } from '@/ai/flows/get-user-progress';
+import { getLastUserProgress } from '@/ai/flows/get-user-progress';
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const progress = await getUserProgressFlow(body);
+    const progress = await getLastUserProgress(body);
     return NextResponse.json(progress);
   } catch (error: any) {
     console.error('Error in get-user-progress API route:', error);

@@ -36,7 +36,6 @@ const SaveUserProfileInputSchema = z.object({
   profileData: UserProfileSchema,
 });
 
-
 const getUserProfileFlow = ai.defineFlow(
   {
     name: 'getUserProfile',

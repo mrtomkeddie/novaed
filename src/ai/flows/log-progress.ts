@@ -8,8 +8,6 @@
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 import * as admin from 'firebase-admin';
-import type { GenerateLessonSummaryOutput } from '@/ai/flows/generate-lesson-summary';
-
 
 // Helper function to initialize Firebase Admin SDK safely.
 function initializeFirebaseAdmin() {
@@ -48,7 +46,7 @@ const logProgressFlow = ai.defineFlow(
       await progressRef.set({
         ...summary,
         // Ensure date is a Firestore timestamp for proper ordering.
-        date: admin.firestore.Timestamp.fromDate(new Date()),
+        date: admin.firestore.Timestamp.fromDate(new Date(summary.date)),
       });
 
       return { success: true };

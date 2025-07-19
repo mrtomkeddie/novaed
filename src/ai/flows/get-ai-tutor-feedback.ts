@@ -28,10 +28,8 @@ const GetAITutorFeedbackOutputSchema = z.object({
   feedback: z.string().describe('The AI tutor\'s next message to the user.'),
   multipleChoiceOptions: z.array(z.string()).nullable().describe('An optional list of multiple-choice answers for the user.'),
 });
+export type GetAITutorFeedbackOutput = z.infer<typeof GetAITutorFeedbackOutputSchema>;
 
-export async function getAITutorFeedback(input: z.infer<typeof GetAITutorFeedbackInputSchema>): Promise<z.infer<typeof GetAITutorFeedbackOutputSchema>> {
-  return aiTutorFeedbackFlow(input);
-}
 
 // Define the main flow.
 const aiTutorFeedbackFlow = ai.defineFlow(
@@ -91,3 +89,7 @@ const aiTutorFeedbackFlow = ai.defineFlow(
     return output;
   }
 );
+
+export async function getAITutorFeedback(input: z.infer<typeof GetAITutorFeedbackInputSchema>): Promise<GetAITutorFeedbackOutput> {
+  return aiTutorFeedbackFlow(input);
+}

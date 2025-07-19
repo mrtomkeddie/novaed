@@ -1,7 +1,7 @@
 'use server';
 
 import { NextResponse } from 'next/server';
-import { getAllUserProgressFlow } from '@/ai/flows/get-user-progress';
+import { getAllUserProgress } from '@/ai/flows/get-user-progress';
 
 export async function POST(request: Request) {
   try {
@@ -11,7 +11,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'User ID is required' }, { status: 400 });
     }
 
-    const progressData = await getAllUserProgressFlow({ userId });
+    const progressData = await getAllUserProgress({ userId });
     return NextResponse.json(progressData);
   } catch (error: any) {
     console.error('Error in get-all-user-progress API route:', error);

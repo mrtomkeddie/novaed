@@ -36,10 +36,6 @@ export const GenerateLessonSummaryOutputSchema = z.object({
 
 export type GenerateLessonSummaryOutput = z.infer<typeof GenerateLessonSummaryOutputSchema>;
 
-export async function generateLessonSummary(input: z.infer<typeof GenerateLessonSummaryInputSchema>): Promise<GenerateLessonSummaryOutput> {
-  return lessonSummaryFlow(input);
-}
-
 // Define the prompt for the AI to generate the summary.
 const lessonSummaryPrompt = ai.definePrompt({
   name: 'lessonSummaryPrompt',
@@ -87,3 +83,7 @@ const lessonSummaryFlow = ai.defineFlow(
     return output;
   }
 );
+
+export async function generateLessonSummary(input: z.infer<typeof GenerateLessonSummaryInputSchema>): Promise<GenerateLessonSummaryOutput> {
+  return lessonSummaryFlow(input);
+}
