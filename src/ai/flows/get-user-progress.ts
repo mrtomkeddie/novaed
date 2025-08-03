@@ -37,13 +37,13 @@ const GetAllUserProgressInputSchema = z.object({
 const ProgressOutputSchema = z.any().nullable(); 
 
 // Helper function to safely serialize Firestore data, especially Timestamps.
-function serializeFirestoreDoc(docData: admin.firestore.DocumentData | undefined): GenerateLessonSummaryOutput | null {
-    if (!docData) return null;
+// This is the critical step to prevent server serialization errors.
+function serializeFirestoreDoc(doc: admin.firestore.DocumentData | undefined): GenerateLessonSummaryOutput | null {
+    if (!doc) return null;
     
-    const data = { ...docData };
+    const data = { ...doc };
     
     // Safely convert Firestore Timestamp to ISO string.
-    // This is the critical step to prevent server serialization errors.
     if (data.date && typeof data.date.toDate === 'function') {
         data.date = data.date.toDate().toISOString();
     }
@@ -101,7 +101,7 @@ const getAllUserProgressFlow = ai.defineFlow(
             return [];
         }
 
-        // Serialize each document in the array
+        // Serialize each document in the array, filtering out any potential nulls
         return snapshot.docs.map(doc => serializeFirestoreDoc(doc.data())).filter(Boolean) as GenerateLessonSummaryOutput[];
     }
 );
