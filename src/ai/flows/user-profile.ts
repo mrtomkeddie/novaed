@@ -5,9 +5,6 @@
  * - getUserProfile: Retrieves a user's profile.
  * - saveUserProfile: Saves a user's profile.
  */
-
-import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
 import * as admin from 'firebase-admin';
 import type { UserProfile } from '@/types';
 
@@ -22,27 +19,7 @@ function initializeFirebaseAdmin() {
     });
 }
 
-const UserProfileSchema = z.object({
-    displayName: z.string(),
-    tutorTheme: z.enum(['mario', 'sonic']),
-});
-
-const GetUserProfileInputSchema = z.object({
-    userId: z.string(),
-});
-
-const SaveUserProfileInputSchema = z.object({
-  userId: z.string(),
-  profileData: UserProfileSchema,
-});
-
-const getUserProfileFlow = ai.defineFlow(
-  {
-    name: 'getUserProfile',
-    inputSchema: GetUserProfileInputSchema,
-    outputSchema: UserProfileSchema.nullable(),
-  },
-  async ({ userId }) => {
+export async function getUserProfile({ userId }: { userId: string }): Promise<UserProfile | null> {
     initializeFirebaseAdmin();
     const db = admin.firestore();
 
@@ -51,30 +28,14 @@ const getUserProfileFlow = ai.defineFlow(
         return null;
     }
     return doc.data() as UserProfile;
-  }
-);
-
-const saveUserProfileFlow = ai.defineFlow(
-    {
-        name: 'saveUserProfile',
-        inputSchema: SaveUserProfileInputSchema,
-        outputSchema: z.void(),
-    },
-    async ({ userId, profileData }) => {
-        initializeFirebaseAdmin();
-        const db = admin.firestore();
-
-        await db.collection('users').doc(userId).set({
-            ...profileData,
-            lastProfileUpdate: admin.firestore.FieldValue.serverTimestamp()
-        }, { merge: true });
-    }
-);
-
-export async function getUserProfile(input: z.infer<typeof GetUserProfileInputSchema>): Promise<UserProfile | null> {
-    return getUserProfileFlow(input);
 }
 
-export async function saveUserProfile(input: z.infer<typeof SaveUserProfileInputSchema>): Promise<void> {
-    return saveUserProfileFlow(input);
+export async function saveUserProfile({ userId, profileData }: { userId: string, profileData: UserProfile }): Promise<void> {
+    initializeFirebaseAdmin();
+    const db = admin.firestore();
+
+    await db.collection('users').doc(userId).set({
+        ...profileData,
+        lastProfileUpdate: admin.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
 }
