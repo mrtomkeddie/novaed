@@ -9,10 +9,6 @@ const nextConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
-  experimental: {
-    // This is required for Genkit to work correctly.
-    esmExternals: 'loose',
-  },
   images: {
     remotePatterns: [
       {
@@ -22,16 +18,6 @@ const nextConfig: NextConfig = {
         pathname: '/**',
       },
     ],
-  },
-  webpack: (config, { isServer }) => {
-    // Exclude specific server-only modules from the client bundle to prevent build errors.
-    if (!isServer) {
-      config.externals = [
-        ...(config.externals || []),
-        'firebase-admin',
-      ];
-    }
-    return config;
   },
 };
 

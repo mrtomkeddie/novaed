@@ -1,8 +1,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useAuth } from '@/hooks/use-auth';
+import { useState } from 'react';
 import { AppHeader } from '@/components/app-header';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,7 +9,6 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Bot, Clapperboard } from 'lucide-react';
-import { saveUserProfile, getUserProfile } from '@/services/firebase';
 import {
   Select,
   SelectContent,
@@ -19,88 +17,31 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 
-export function ProfileClient() {
-  const { user, loading: authLoading } = useAuth();
-  const { toast } = useToast();
-  const [firstName, setFirstName] = useState('');
-  const [tutorTheme, setTutorTheme] = useState('mario');
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSaving, setIsSaving] = useState(false);
+// Using dummy data as user profiles are removed
+const dummyProfile = {
+    displayName: "Learner",
+    email: "learner@novaed.app",
+    tutorTheme: "mario",
+}
 
-  useEffect(() => {
-    if (user) {
-      const loadProfile = async () => {
-        setIsLoading(true);
-        try {
-          const profile = await getUserProfile(user.uid);
-          if (profile) {
-            setFirstName(profile.displayName || user.displayName || '');
-            setTutorTheme(profile.tutorTheme || 'mario');
-          } else {
-            setFirstName(user.displayName || '');
-            setTutorTheme('mario');
-          }
-        } catch (error) {
-            console.error("Failed to load user profile", error);
-            setFirstName(user.displayName || '');
-            setTutorTheme('mario');
-            toast({
-                variant: 'destructive',
-                title: 'Could not load profile',
-                description: 'Using default settings.'
-            });
-        } finally {
-          setIsLoading(false);
-        }
-      };
-      loadProfile();
-    }
-  }, [user, toast]);
+export function ProfileClient() {
+  const { toast } = useToast();
+  const [firstName, setFirstName] = useState(dummyProfile.displayName);
+  const [tutorTheme, setTutorTheme] = useState(dummyProfile.tutorTheme);
+  const [isSaving, setIsSaving] = useState(false);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) return;
-    if (!firstName.trim()) {
-        toast({
-            variant: 'destructive',
-            title: 'First Name Required',
-            description: 'Please enter a name.',
-        });
-        return;
-    }
-    
     setIsSaving(true);
-    try {
-      const profileData = {
-        displayName: firstName.trim(),
-        tutorTheme: tutorTheme,
-      };
-      await saveUserProfile(user.uid, profileData);
-      
-      toast({
-        title: 'Profile Updated!',
-        description: 'Your changes have been saved successfully.',
-      });
-
-    } catch (error: any) {
-      toast({
-        variant: 'destructive',
-        title: 'Update Failed',
-        description: error.message || 'There was an error updating your profile.',
-      });
-    } finally {
-      setIsSaving(false);
-    }
+    // Simulate a save operation
+    setTimeout(() => {
+        toast({
+            title: 'Profile Updated!',
+            description: 'Your changes have been saved successfully (demo).',
+        });
+        setIsSaving(false);
+    }, 1000);
   };
-  
-  if (authLoading || isLoading) {
-    return (
-        <div className="flex flex-col h-screen bg-background items-center justify-center">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            <p className="mt-4 text-muted-foreground">Loading Profile...</p>
-        </div>
-    );
-  }
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -114,7 +55,7 @@ export function ProfileClient() {
             <Card>
               <CardHeader>
                 <CardTitle className="text-center">{firstName || 'Welcome!'}</CardTitle>
-                <CardDescription className="text-center">{user?.email}</CardDescription>
+                <CardDescription className="text-center">{dummyProfile.email}</CardDescription>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleSave} className="space-y-6">

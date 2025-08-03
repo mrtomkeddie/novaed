@@ -1,10 +1,10 @@
 
+
 'use client';
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { AppHeader } from "@/components/app-header";
-import { useAuth } from "@/hooks/use-auth";
 import { subjects } from "@/data/subjects";
 import { timetableData } from "@/components/timetable";
 import { Button } from '@/components/ui/button';
@@ -21,13 +21,12 @@ type DailyLesson = {
 }
 
 export function DashboardClient() {
-  const { user } = useAuth();
   const [todaysLessons, setTodaysLessons] = useState<DailyLesson[]>([]);
   const [currentLessonIndex, setCurrentLessonIndex] = useState(0);
   const [isClient, setIsClient] = useState(false);
   const [greeting, setGreeting] = useState("Welcome");
 
-  const welcomeName = user?.displayName || user?.email?.split('@')[0] || 'friend';
+  const welcomeName = 'learner'; // Using a dummy name
   
   useEffect(() => {
     // This effect runs only on the client, after initial render
@@ -43,8 +42,6 @@ export function DashboardClient() {
 
 
   useEffect(() => {
-    // This logic now runs only on the client, preventing server/client mismatch
-    // and improving initial load performance.
     if (isClient) {
         // Determine today's lessons from timetable
         const today = new Date().toLocaleDateString('en-US', { weekday: 'long' });
@@ -57,7 +54,7 @@ export function DashboardClient() {
                 lessonTitle: subject?.description || 'Time to learn!',
                 subject: subject,
             };
-        }).filter(l => l.subject); // Filter out any lessons that don't match a subject
+        }).filter(l => l.subject);
 
         setTodaysLessons(lessonsWithSubjects);
 
@@ -70,12 +67,10 @@ export function DashboardClient() {
                 if (date === todayStr) {
                     setCurrentLessonIndex(index);
                 } else {
-                    // It's a new day, reset progress
                     localStorage.setItem('dailyProgress', JSON.stringify({ date: todayStr, index: 0 }));
                     setCurrentLessonIndex(0);
                 }
             } catch (e) {
-                // If localStorage is corrupt, reset it
                 localStorage.setItem('dailyProgress', JSON.stringify({ date: todayStr, index: 0 }));
                 setCurrentLessonIndex(0);
             }
@@ -124,7 +119,7 @@ export function DashboardClient() {
                         </div>
                         <CardTitle className="mt-4">All lessons complete!</CardTitle>
                         <CardDescription>
-                           Great job! You powered through all your lessons for today. Just like Mario clearing a world!
+                           Great job! You powered through all your lessons for today.
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -154,8 +149,8 @@ export function DashboardClient() {
                     </CardHeader>
                     <CardContent className="flex flex-col sm:flex-row gap-3">
                          <Button asChild size="lg" className="flex-1 bg-btn-gradient text-accent-foreground hover:opacity-90">
-                            <Link href={currentLesson.subject.href}>
-                                Let's Go!
+                            <Link href="/curriculum">
+                                Start Lesson
                                 <ArrowRight className="ml-2"/>
                             </Link>
                         </Button>

@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -7,7 +8,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { useAuth } from '@/hooks/use-auth';
 import { subjects } from '@/data/subjects';
 import type { GenerateLessonSummaryOutput } from '@/ai/flows/generate-lesson-summary';
 import { Loader2, Award, BookOpen, BrainCircuit, Calendar, Check, X, Trophy } from 'lucide-react';
@@ -19,51 +19,36 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 
-interface ProgressClientProps {
-    initialProgress: GenerateLessonSummaryOutput[];
-}
+// Dummy progress data since we removed user-specific data fetching.
+const dummyProgressData: GenerateLessonSummaryOutput[] = [
+    {
+        subject: 'Maths (Core)',
+        topic_title: 'Number Sense',
+        topic_id: 'mc-1-1',
+        tutor_summary: 'Student showed great understanding of place value!',
+        mastery_status: 'Yes',
+        xp_earned: 100,
+        learning_style_used: 'Interactive',
+        date: new Date().toISOString(),
+    },
+    {
+        subject: 'Physics',
+        topic_title: 'Forces and Effects',
+        topic_id: 'phy-1-1',
+        tutor_summary: 'Needed a bit of help with unbalanced forces.',
+        mastery_status: 'No',
+        xp_earned: 25,
+        learning_style_used: 'Problem-Solving',
+        date: new Date(Date.now() - 86400000).toISOString(), // Yesterday
+    }
+];
 
-export function ProgressClient({ initialProgress }: ProgressClientProps) {
-  const { user } = useAuth();
-  const [progressData, setProgressData] = useState<GenerateLessonSummaryOutput[]>(initialProgress);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+export function ProgressClient({ initialProgress }: { initialProgress: GenerateLessonSummaryOutput[] }) {
+  const [progressData] = useState<GenerateLessonSummaryOutput[]>(dummyProgressData);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error] = useState<string | null>(null);
   const [selectedSubject, setSelectedSubject] = useState<string>('all');
   const [availableSubjects, setAvailableSubjects] = useState<string[]>([]);
-
-
-  useEffect(() => {
-    if (user) {
-      const fetchProgress = async () => {
-        setIsLoading(true);
-        try {
-          const response = await fetch('/api/get-all-user-progress', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ userId: user.uid }),
-          });
-
-          if (!response.ok) {
-            throw new Error('Failed to fetch progress data');
-          }
-
-          const data = await response.json();
-          data.sort((a: GenerateLessonSummaryOutput, b: GenerateLessonSummaryOutput) => new Date(b.date).getTime() - new Date(a.date).getTime());
-          setProgressData(data);
-        } catch (e: any) {
-          setError('Failed to load progress data. Please try again later.');
-          console.error(e);
-        } finally {
-          setIsLoading(false);
-        }
-      };
-      fetchProgress();
-    } else {
-        setIsLoading(false);
-    }
-  }, [user]);
 
   useEffect(() => {
     if(progressData.length > 0) {
@@ -180,7 +165,7 @@ export function ProgressClient({ initialProgress }: ProgressClientProps) {
                       {summary.mastery_status === 'No' && subjectId && (
                           <CardFooter>
                               <Button variant="secondary" className="w-full" asChild>
-                                  <Link href={`/subjects/${subjectId}/chat`}>
+                                  <Link href={`/curriculum`}>
                                       Review Lesson
                                   </Link>
                               </Button>

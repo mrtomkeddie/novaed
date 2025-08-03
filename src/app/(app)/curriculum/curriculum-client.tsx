@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -11,69 +12,18 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { useAuth } from '@/hooks/use-auth';
 import { Loader2 } from 'lucide-react';
 import type { Subject } from '@/types';
 import { CurriculumMap } from '@/components/curriculum-map';
 import { subjects as staticSubjects } from '@/data/subjects';
-import type { GenerateLessonSummaryOutput } from '@/ai/flows/generate-lesson-summary';
-
 
 export function CurriculumClient() {
-  const { user } = useAuth();
-  const [subjects, setSubjects] = useState<Subject[]>(staticSubjects);
-  const [isLoading, setIsLoading] = useState(true);
+  // We no longer fetch progress, so we can use the static subjects directly.
+  const [subjects] = useState<Subject[]>(staticSubjects);
+  const [isLoading, setIsLoading] = useState(false); // Kept for future use, but not essential now
   const [selectedSubjectId, setSelectedSubjectId] = useState<string>(
     staticSubjects[0]?.id || ''
   );
-
-  useEffect(() => {
-    if (user) {
-      const fetchProgressAndMerge = async () => {
-        setIsLoading(true);
-        try {
-          const response = await fetch('/api/get-all-user-progress', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userId: user.uid }),
-          });
-
-          if (!response.ok) {
-            throw new Error('Failed to fetch progress data');
-          }
-
-          const progressData: GenerateLessonSummaryOutput[] = await response.json();
-          
-          if (progressData && progressData.length > 0) {
-            const progressMap = new Map(progressData.map(p => [p.topic_id, p]));
-
-            const subjectsWithProgress = staticSubjects.map(subject => ({
-              ...subject,
-              lessons: subject.lessons.map(lesson => ({
-                ...lesson,
-                completed: progressMap.has(lesson.id),
-              })),
-            }));
-            setSubjects(subjectsWithProgress);
-          } else {
-            // No progress data, use static subjects
-            setSubjects(staticSubjects);
-          }
-          
-        } catch (error) {
-          console.error("Failed to fetch or merge progress:", error);
-          // On error, fallback to static subjects
-          setSubjects(staticSubjects);
-        } finally {
-          setIsLoading(false);
-        }
-      };
-
-      fetchProgressAndMerge();
-    } else {
-        setIsLoading(false);
-    }
-  }, [user]);
 
   const selectedSubject = subjects.find((s) => s.id === selectedSubjectId);
 
