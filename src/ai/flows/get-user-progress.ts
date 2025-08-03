@@ -17,7 +17,6 @@ function initializeFirebaseAdmin() {
     if (admin.apps.length > 0) {
         return admin.app();
     }
-    // Make sure to use the correct project ID from environment variables.
     return admin.initializeApp({
         credential: admin.credential.applicationDefault(),
         projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
@@ -33,24 +32,8 @@ const GetAllUserProgressInputSchema = z.object({
   userId: z.string(),
 });
 
-// The schema should be nullable to handle cases where no progress is found.
-const ProgressOutputSchema = z.any().nullable(); 
-
-// Helper function to safely serialize Firestore data, especially Timestamps.
-// This is the critical step to prevent server serialization errors.
-function serializeFirestoreDoc(doc: admin.firestore.DocumentData | undefined): GenerateLessonSummaryOutput | null {
-    if (!doc) return null;
-    
-    const data = { ...doc };
-    
-    // Safely convert Firestore Timestamp to ISO string.
-    if (data.date && typeof data.date.toDate === 'function') {
-        data.date = data.date.toDate().toISOString();
-    }
-    
-    return data as GenerateLessonSummaryOutput;
-}
-
+// Using z.any() because the structure is already defined by GenerateLessonSummaryOutput
+const ProgressOutputSchema = z.any(); 
 
 const getUserProgressFlow = ai.defineFlow(
   {
@@ -63,10 +46,7 @@ const getUserProgressFlow = ai.defineFlow(
     const db = admin.firestore();
 
     const subject = subjects.find(s => s.id === subjectId);
-    if (!subject) {
-        console.warn(`Subject not found for ID: ${subjectId}`);
-        return null;
-    }
+    if (!subject) return null;
 
     const snapshot = await db.collection('users').doc(userId).collection('progress')
       .where('subject', '==', subject.name)
@@ -78,8 +58,7 @@ const getUserProgressFlow = ai.defineFlow(
       return null;
     }
     
-    // Serialize the document data before returning
-    return serializeFirestoreDoc(snapshot.docs[0].data());
+    return snapshot.docs[0].data() as GenerateLessonSummaryOutput;
   }
 );
 
@@ -87,22 +66,19 @@ const getAllUserProgressFlow = ai.defineFlow(
     {
         name: 'getAllUserProgressFlow',
         inputSchema: GetAllUserProgressInputSchema,
-        outputSchema: z.array(z.any()),
+        outputSchema: z.array(ProgressOutputSchema),
     },
     async ({ userId }) => {
         initializeFirebaseAdmin();
         const db = admin.firestore();
         
-        const snapshot = await db.collection('users').doc(userId).collection('progress')
-            .orderBy('date', 'desc')
-            .get();
+        const snapshot = await db.collection('users').doc(userId).collection('progress').get();
         
         if (snapshot.empty) {
             return [];
         }
 
-        // Serialize each document in the array, filtering out any potential nulls
-        return snapshot.docs.map(doc => serializeFirestoreDoc(doc.data())).filter(Boolean) as GenerateLessonSummaryOutput[];
+        return snapshot.docs.map(doc => doc.data() as GenerateLessonSummaryOutput);
     }
 );
 
