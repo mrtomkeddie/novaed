@@ -4,7 +4,6 @@ import { PT_Sans } from 'next/font/google';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import { cn } from '@/lib/utils';
-import { AuthProvider } from '@/components/auth-provider';
 
 const ptSans = PT_Sans({
   subsets: ['latin'],
@@ -29,9 +28,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="h-full dark">
       <body className={cn("font-sans antialiased h-full", ptSans.variable)} suppressHydrationWarning>
-        <AuthProvider>
-          {children}
-        </AuthProvider>
+        {children}
         <Toaster />
       </body>
     </html>
