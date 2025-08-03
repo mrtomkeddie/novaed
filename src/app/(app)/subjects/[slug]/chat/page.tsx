@@ -86,6 +86,11 @@ export default function ChatPage() {
             topic = subject.lessons.find(l => !l.completed) || subject.lessons[0];
           }
           
+          if (!topic) {
+            // Fallback if no topic could be determined
+            topic = subject.lessons[0];
+          }
+
           setCurrentTopic(topic);
           const userName = user.displayName || user.email?.split('@')[0] || 'User';
           
@@ -284,7 +289,7 @@ export default function ChatPage() {
     (lastMessage.multipleChoiceOptions?.length ?? 0) > 0 &&
     !isNovaTyping;
 
-  if (authLoading || !subject || !user) {
+  if (authLoading || !subject || !user || isLoading) {
     return (
       <div className="flex flex-col h-screen bg-background items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
