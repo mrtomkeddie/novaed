@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import Link from 'next/link';
@@ -22,8 +23,8 @@ export function LandingHeader() {
         
         <nav className="flex items-center gap-2">
           <Button asChild size="sm" className="bg-btn-gradient text-accent-foreground hover:opacity-90">
-            <Link href="/login">
-              Login
+            <Link href="/dashboard">
+              Launch App
             </Link>
           </Button>
         </nav>

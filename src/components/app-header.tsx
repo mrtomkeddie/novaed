@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import Link from 'next/link';
@@ -6,18 +7,10 @@ import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet';
-import { Map, LayoutDashboard, LogOut, Gamepad2, Award, Menu, UserCircle2 } from 'lucide-react';
-import { useAuth } from '@/hooks/use-auth';
+import { Map, LayoutDashboard, Gamepad2, Award, Menu, UserCircle2 } from 'lucide-react';
 
 export function AppHeader() {
   const pathname = usePathname();
-  const { user, logout } = useAuth();
-
-  const handleLogout = async () => {
-    await logout();
-    // After logout, redirect to the public landing page.
-    window.location.href = '/';
-  };
 
   const navLinks = [
     { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, exact: true },
@@ -80,14 +73,6 @@ export function AppHeader() {
                   );
                 })}
               </nav>
-              {user && (
-                <div className="mt-auto border-t p-4">
-                  <Button variant="ghost" className="w-full justify-start" onClick={handleLogout}>
-                    <LogOut className="mr-2 h-4 w-4" />
-                    Logout
-                  </Button>
-                </div>
-              )}
             </div>
           </SheetContent>
         </Sheet>

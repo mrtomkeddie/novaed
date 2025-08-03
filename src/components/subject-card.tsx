@@ -18,9 +18,8 @@ interface SubjectCardProps {
 
 export function SubjectCard({ subject }: SubjectCardProps) {
   const Icon = subject.icon;
-  const totalLessons = subject.lessons.length;
-  const completedLessons = subject.lessons.filter(l => l.completed).length;
-  const progress = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
+  // Using dummy progress data
+  const progress = Math.floor(Math.random() * 80) + 10; // Random progress between 10-90%
 
   return (
     <Card className="flex flex-col h-full hover:shadow-lg transition-shadow duration-300 ease-in-out">
@@ -44,8 +43,8 @@ export function SubjectCard({ subject }: SubjectCardProps) {
       </CardContent>
       <CardFooter>
         <Button asChild className="w-full bg-btn-gradient text-accent-foreground hover:opacity-90">
-          <Link href={subject.href}>
-            Start Lesson
+          <Link href={'/curriculum'}>
+            View Curriculum
           </Link>
         </Button>
       </CardFooter>
