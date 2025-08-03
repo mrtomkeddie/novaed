@@ -6,8 +6,6 @@
  * - getAllUserProgress: Fetches all progress records for a user.
  */
 
-import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
 import * as admin from 'firebase-admin';
 import { subjects } from '@/data/subjects';
 import type { GenerateLessonSummaryOutput } from '@/ai/flows/generate-lesson-summary';
@@ -24,34 +22,15 @@ function initializeFirebaseAdmin() {
 }
 
 // Helper function to safely serialize Firestore data, converting Timestamps to ISO strings.
-function serializeFirestoreDoc(doc: admin.firestore.DocumentData): GenerateLessonSummaryOutput {
+function serializeFirestoreDoc(doc: admin.firestore.DocumentData) {
     const data = doc.data();
-    const serializedData = { ...data };
     if (data.date && typeof data.date.toDate === 'function') {
-        serializedData.date = data.date.toDate().toISOString();
+        data.date = data.date.toDate().toISOString();
     }
-    return serializedData as GenerateLessonSummaryOutput;
+    return data;
 }
 
-const GetUserProgressInputSchema = z.object({
-  userId: z.string(),
-  subjectId: z.string(),
-});
-
-const GetAllUserProgressInputSchema = z.object({
-  userId: z.string(),
-});
-
-// Using z.any() because the structure is already defined by GenerateLessonSummaryOutput
-const ProgressOutputSchema = z.any(); 
-
-const getUserProgressFlow = ai.defineFlow(
-  {
-    name: 'getUserProgress',
-    inputSchema: GetUserProgressInputSchema,
-    outputSchema: ProgressOutputSchema,
-  },
-  async ({ userId, subjectId }) => {
+export async function getLastUserProgress({ userId, subjectId }: { userId: string, subjectId: string }): Promise<GenerateLessonSummaryOutput | null> {
     initializeFirebaseAdmin();
     const db = admin.firestore();
 
@@ -68,34 +47,18 @@ const getUserProgressFlow = ai.defineFlow(
       return null;
     }
     
-    return serializeFirestoreDoc(snapshot.docs[0]);
-  }
-);
-
-const getAllUserProgressFlow = ai.defineFlow(
-    {
-        name: 'getAllUserProgressFlow',
-        inputSchema: GetAllUserProgressInputSchema,
-        outputSchema: z.array(ProgressOutputSchema),
-    },
-    async ({ userId }) => {
-        initializeFirebaseAdmin();
-        const db = admin.firestore();
-        
-        const snapshot = await db.collection('users').doc(userId).collection('progress').get();
-        
-        if (snapshot.empty) {
-            return [];
-        }
-
-        return snapshot.docs.map(serializeFirestoreDoc);
-    }
-);
-
-export async function getLastUserProgress(input: z.infer<typeof GetUserProgressInputSchema>): Promise<GenerateLessonSummaryOutput | null> {
-    return getUserProgressFlow(input);
+    return serializeFirestoreDoc(snapshot.docs[0]) as GenerateLessonSummaryOutput;
 }
 
-export async function getAllUserProgress(input: z.infer<typeof GetAllUserProgressInputSchema>): Promise<GenerateLessonSummaryOutput[]> {
-    return getAllUserProgressFlow(input);
+export async function getAllUserProgress({ userId }: { userId: string }): Promise<GenerateLessonSummaryOutput[]> {
+    initializeFirebaseAdmin();
+    const db = admin.firestore();
+    
+    const snapshot = await db.collection('users').doc(userId).collection('progress').get();
+    
+    if (snapshot.empty) {
+        return [];
+    }
+
+    return snapshot.docs.map(doc => serializeFirestoreDoc(doc) as GenerateLessonSummaryOutput);
 }
