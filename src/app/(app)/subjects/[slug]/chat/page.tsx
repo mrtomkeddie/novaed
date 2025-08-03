@@ -63,10 +63,8 @@ export default function ChatPage() {
             body: JSON.stringify({ userId: user.uid, subjectId: subject.id }),
           });
 
-          // Even if the response is not "ok" (e.g., 404), we can still proceed
-          // by assuming no progress exists. We'll only throw for server errors.
-          if (response.status >= 500) {
-            throw new Error(`Server error: ${response.statusText}`);
+          if (!response.ok) {
+            throw new Error('Failed to fetch user progress');
           }
           
           const lastProgress = await response.json();
@@ -86,11 +84,6 @@ export default function ChatPage() {
             topic = subject.lessons.find(l => !l.completed) || subject.lessons[0];
           }
           
-          if (!topic) {
-            // Fallback if no topic could be determined
-            topic = subject.lessons[0];
-          }
-
           setCurrentTopic(topic);
           const userName = user.displayName || user.email?.split('@')[0] || 'User';
           
@@ -251,14 +244,9 @@ export default function ChatPage() {
         const todayStr = new Date().toISOString().split('T')[0];
         const dailyProgress = localStorage.getItem('dailyProgress');
         if (dailyProgress) {
-            try {
-                const { date, index } = JSON.parse(dailyProgress);
-                if (date === todayStr) {
-                    localStorage.setItem('dailyProgress', JSON.stringify({ date: todayStr, index: index + 1 }));
-                }
-            } catch (e) {
-                // If localStorage is corrupt, reset it
-                localStorage.setItem('dailyProgress', JSON.stringify({ date: todayStr, index: 0 }));
+            const { date, index } = JSON.parse(dailyProgress);
+            if (date === todayStr) {
+                localStorage.setItem('dailyProgress', JSON.stringify({ date: todayStr, index: index + 1 }));
             }
         }
         router.push('/dashboard');
@@ -289,7 +277,7 @@ export default function ChatPage() {
     (lastMessage.multipleChoiceOptions?.length ?? 0) > 0 &&
     !isNovaTyping;
 
-  if (authLoading || !subject || !user || isLoading) {
+  if (authLoading || !subject || !user) {
     return (
       <div className="flex flex-col h-screen bg-background items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
