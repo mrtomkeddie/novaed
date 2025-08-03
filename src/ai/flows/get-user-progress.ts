@@ -23,6 +23,16 @@ function initializeFirebaseAdmin() {
     });
 }
 
+// Helper function to safely serialize Firestore data, converting Timestamps to ISO strings.
+function serializeFirestoreDoc(doc: admin.firestore.DocumentData): GenerateLessonSummaryOutput {
+    const data = doc.data();
+    const serializedData = { ...data };
+    if (data.date && typeof data.date.toDate === 'function') {
+        serializedData.date = data.date.toDate().toISOString();
+    }
+    return serializedData as GenerateLessonSummaryOutput;
+}
+
 const GetUserProgressInputSchema = z.object({
   userId: z.string(),
   subjectId: z.string(),
@@ -58,7 +68,7 @@ const getUserProgressFlow = ai.defineFlow(
       return null;
     }
     
-    return snapshot.docs[0].data() as GenerateLessonSummaryOutput;
+    return serializeFirestoreDoc(snapshot.docs[0]);
   }
 );
 
@@ -78,7 +88,7 @@ const getAllUserProgressFlow = ai.defineFlow(
             return [];
         }
 
-        return snapshot.docs.map(doc => doc.data() as GenerateLessonSummaryOutput);
+        return snapshot.docs.map(serializeFirestoreDoc);
     }
 );
 
