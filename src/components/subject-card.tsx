@@ -13,12 +13,14 @@ import { Progress } from "@/components/ui/progress";
 
 interface SubjectCardProps {
   subject: Subject;
+  // Make progress optional as it may not always be available
+  // This was the source of the error.
+  completedLessons?: number; 
 }
 
-export function SubjectCard({ subject }: SubjectCardProps) {
+export function SubjectCard({ subject, completedLessons = 0 }: SubjectCardProps) {
   const Icon = subject.icon;
   const totalLessons = subject.lessons.length;
-  const completedLessons = subject.lessons.filter(l => l.completed).length;
   const progress = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
 
   return (
