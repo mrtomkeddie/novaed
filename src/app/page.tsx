@@ -28,7 +28,7 @@ export default function LandingPage() {
       <LandingHeader />
       <main className="flex-1">
         {/* Hero Section */}
-        <section className="container mx-auto py-16 md:py-24">
+        <section className="container mx-auto py-16 md:py-24 px-8 lg:px-12">
             <div className="grid lg:grid-cols-2 lg:gap-12 items-center">
                 <div className="text-center lg:text-left">
                     <div className="max-w-xl mx-auto lg:mx-0">
@@ -38,10 +38,10 @@ export default function LandingPage() {
                         <p className="text-lg text-muted-foreground mt-6">
                             NovaEd provides a fun, personalized learning adventure with an AI tutor that adapts to your child's unique pace and style.
                         </p>
-                        <div className="mt-10 grid grid-cols-3 gap-8 text-center lg:text-left">
+                        <div className="mt-10 grid grid-cols-3 gap-8 text-center">
                             {stats.map((stat, index) => (
                                 <div key={index} className="space-y-2">
-                                    <div className="flex items-center justify-center lg:justify-start gap-2">
+                                    <div className="flex items-center justify-center gap-2">
                                         <div className="text-accent">{stat.icon}</div>
                                         <p className="text-3xl font-bold">{stat.value}</p>
                                     </div>
@@ -76,6 +76,12 @@ export default function LandingPage() {
                                     Create Account
                                 </Button>
                             </form>
+                             <div className="mt-4 text-center text-sm">
+                                Already have an account?{' '}
+                                <Link href="/login" className="underline">
+                                Sign In
+                                </Link>
+                            </div>
                         </CardContent>
                     </Card>
                 </div>
