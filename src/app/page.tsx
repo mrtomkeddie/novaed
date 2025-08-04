@@ -36,6 +36,17 @@ export default function LandingPage() {
               <p className="text-lg text-muted-foreground max-w-lg mx-auto lg:mx-0">
                   NovaEd provides a fun, personalized learning adventure with an AI tutor that adapts to your child's unique pace and style.
               </p>
+              <div className="mt-16 grid grid-cols-3 gap-8 text-center w-full max-w-lg mx-auto lg:mx-0">
+                  {stats.map((stat, index) => (
+                      <div key={index} className="space-y-2">
+                          <div className="flex items-center justify-center lg:justify-start gap-2">
+                              <div className="text-accent">{stat.icon}</div>
+                              <p className="text-3xl font-bold">{stat.value}</p>
+                          </div>
+                          <p className="text-md text-muted-foreground">{stat.label}</p>
+                      </div>
+                  ))}
+              </div>
           </div>
           
           <div>
@@ -69,18 +80,6 @@ export default function LandingPage() {
 
         <section className="py-16 md:py-24 bg-secondary/30">
           <div className="container mx-auto">
-            <div className="grid grid-cols-3 gap-8 text-center w-full max-w-4xl mx-auto">
-                {stats.map((stat, index) => (
-                    <div key={index} className="space-y-2">
-                        <div className="flex items-center justify-center gap-2">
-                            <div className="text-accent">{stat.icon}</div>
-                            <p className="text-3xl font-bold">{stat.value}</p>
-                        </div>
-                        <p className="text-md text-muted-foreground">{stat.label}</p>
-                    </div>
-                ))}
-            </div>
-
             <div className="mt-20 grid md:grid-cols-2 lg:grid-cols-3 gap-8 w-full max-w-6xl mx-auto">
                 {features.map((feature, index) => (
                     <div key={index} className="flex items-start text-left gap-4 p-6 rounded-lg bg-card/50">
