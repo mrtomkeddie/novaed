@@ -10,15 +10,14 @@ import {
   Sigma,
 } from 'lucide-react';
 
-// The 'href' for each subject has been updated to point to the main curriculum page
-// instead of the now-disabled chat page.
+// The 'href' for each subject has been updated to point to the chat page.
 export const subjects: Subject[] = [
   {
     id: 'maths-applied',
     name: 'Maths (Applied)',
     description: 'Focus on the practical application of mathematical concepts.',
     icon: Calculator,
-    href: '/curriculum',
+    href: '/subjects/maths-applied/chat',
     lessons: [
       { id: 'ma-1-1', title: 'Money Maths: UK coins and notes, giving change; Budgeting for small purchases', completed: false },
       { id: 'ma-1-2', title: 'Practical Time Problems: Bus/train schedules, elapsed time', completed: false },
@@ -48,7 +47,7 @@ export const subjects: Subject[] = [
     name: 'Maths (Core)',
     description: 'Explore fundamental principles and theories of mathematics.',
     icon: Sigma,
-    href: '/curriculum',
+    href: '/subjects/maths-core/chat',
     lessons: [
       { id: 'mc-1-1', title: 'Number Sense: Place value, ordering, negative numbers, rounding', completed: false },
       { id: 'mc-1-2', title: 'Arithmetic: Four operations (addition, subtraction, multiplication, division)', completed: false },
@@ -83,7 +82,7 @@ export const subjects: Subject[] = [
     name: 'Physics',
     description: 'Uncover the laws governing matter, energy, space, and time.',
     icon: Atom,
-    href: '/curriculum',
+    href: '/subjects/physics/chat',
     lessons: [
         { id: 'phy-1-1', title: 'Forces and Effects: Measure forces using a spring balance', completed: false },
         { id: 'phy-1-2', title: 'Forces and Effects: Understand balanced vs. unbalanced forces', completed: false },
@@ -128,7 +127,7 @@ export const subjects: Subject[] = [
     name: 'Chemistry',
     description: 'Study the composition, structure, and properties of matter.',
     icon: FlaskConical,
-    href: '/curriculum',
+    href: '/subjects/chemistry/chat',
     lessons: [
       { id: 'chem-1-1', title: 'States of Matter & Particle Theory: Explore solids, liquids, and gases and how particles behave in each state', completed: false },
       { id: 'chem-1-2', title: 'Changes of State: Understand melting, freezing, boiling, and condensing', completed: false },
@@ -168,7 +167,7 @@ export const subjects: Subject[] = [
     name: 'Biology',
     description: 'Dive into the fascinating world of living organisms and life.',
     icon: Dna,
-    href: '/curriculum',
+    href: '/subjects/biology/chat',
     lessons: [
       { id: 'bio-1-1', title: 'Cells and Systems: Recognise cells as the building blocks of life', completed: false },
       { id: 'bio-1-2', title: 'Cells and Systems: Identify major human organs and systems', completed: false },
@@ -224,7 +223,7 @@ export const subjects: Subject[] = [
     name: 'English A (Grammar)',
     description: 'Master grammar, sentence structure, and written expression.',
     icon: PenSquare,
-    href: '/curriculum',
+    href: '/subjects/english-a/chat',
     lessons: [
       { id: 'en-a-1-1', title: 'Punctuation Extended: Commas, apostrophes for possession and contraction', completed: false },
       { id: 'en-a-1-2', title: 'Spelling and Vocabulary: Common spelling rules (i before e), homophones', completed: false },
@@ -245,7 +244,7 @@ export const subjects: Subject[] = [
     name: 'English B (Comprehension)',
     description: 'Enhance comprehension and functional writing skills.',
     icon: BookOpenCheck,
-    href: '/curriculum',
+    href: '/subjects/english-b/chat',
     lessons: [
       { id: 'en-b-1-1', title: 'Reading: Skimming and Scanning for key information and gist', completed: false },
       { id: 'en-b-1-2', title: 'Reading: Inference Extended - Finding clues in the text to understand meaning', completed: false },
