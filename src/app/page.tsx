@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import Link from 'next/link';
@@ -38,7 +39,7 @@ export default function LandingPage() {
                         <p className="text-lg text-muted-foreground mt-6">
                             NovaEd provides a fun, personalized learning adventure with an AI tutor that adapts to your child's unique pace and style.
                         </p>
-                        <div className="mt-10 grid grid-cols-3 gap-8 text-center">
+                         <div className="mt-10 grid grid-cols-3 gap-8 text-center">
                             {stats.map((stat, index) => (
                                 <div key={index} className="space-y-2">
                                     <div className="flex items-center justify-center gap-2">
@@ -72,8 +73,8 @@ export default function LandingPage() {
                                     <Label htmlFor="password">Password</Label>
                                     <Input id="password" type="password" placeholder="••••••••" />
                                 </div>
-                                <Button size="lg" className="w-full bg-btn-gradient text-accent-foreground hover:opacity-90">
-                                    Create Account
+                                <Button size="lg" className="w-full bg-btn-gradient text-accent-foreground hover:opacity-90" asChild>
+                                    <Link href="/dashboard">Create Account</Link>
                                 </Button>
                             </form>
                              <div className="mt-4 text-center text-sm">
