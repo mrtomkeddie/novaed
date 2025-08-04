@@ -28,71 +28,71 @@ export default function LandingPage() {
     <div className="flex flex-col min-h-screen bg-background text-foreground">
       <LandingHeader />
       <main className="flex-1">
-        <section className="container mx-auto flex flex-col items-center text-center py-16 md:py-24">
-          <div className="space-y-6 max-w-3xl">
+        <section className="container mx-auto grid lg:grid-cols-2 gap-12 items-center py-16 md:py-24">
+          <div className="space-y-6 text-center lg:text-left">
               <h1 className="text-4xl md:text-6xl font-bold tracking-tight">
                   Unlock Your Child's <br /> <span className="text-accent">Full&nbsp;Potential</span>
               </h1>
-              <p className="text-lg text-muted-foreground">
+              <p className="text-lg text-muted-foreground max-w-lg mx-auto lg:mx-0">
                   NovaEd provides a fun, personalized learning adventure with an AI tutor that adapts to your child's unique pace and style.
               </p>
           </div>
-
-          <div className="mt-16 grid grid-cols-3 gap-8 text-center w-full max-w-4xl">
-              {stats.map((stat, index) => (
-                  <div key={index} className="space-y-2">
-                      <div className="flex items-center justify-center gap-2">
-                          <div className="text-accent">{stat.icon}</div>
-                          <p className="text-3xl font-bold">{stat.value}</p>
-                      </div>
-                      <p className="text-md text-muted-foreground">{stat.label}</p>
-                  </div>
-              ))}
-          </div>
-
-          <div className="mt-20 grid md:grid-cols-2 gap-8 w-full max-w-5xl">
-              {features.map((feature, index) => (
-                  <div key={index} className="flex items-start text-left gap-4 p-6 rounded-lg bg-card/50">
-                      <div className="p-3 bg-primary/10 rounded-lg text-primary">{feature.icon}</div>
-                      <div>
-                          <h3 className="text-xl font-semibold">{feature.title}</h3>
-                          <p className="text-md text-muted-foreground mt-2">{feature.description}</p>
-                      </div>
-                  </div>
-              ))}
+          
+          <div>
+            <Card>
+                <CardHeader className="text-center">
+                    <CardTitle className="text-3xl font-headline">Get Started Free</CardTitle>
+                    <CardDescription>Create an account to start the learning adventure.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <form className="space-y-4">
+                        <div className="space-y-2 text-left">
+                            <Label htmlFor="name">Name</Label>
+                            <Input id="name" placeholder="Your name" />
+                        </div>
+                        <div className="space-y-2 text-left">
+                            <Label htmlFor="email">Email</Label>
+                            <Input id="email" type="email" placeholder="you@example.com" />
+                        </div>
+                        <div className="space-y-2 text-left">
+                            <Label htmlFor="password">Password</Label>
+                            <Input id="password" type="password" placeholder="••••••••" />
+                        </div>
+                        <Button size="lg" className="w-full bg-btn-gradient text-accent-foreground hover:opacity-90">
+                            Create Account
+                        </Button>
+                    </form>
+                </CardContent>
+            </Card>
           </div>
         </section>
 
-        <section id="signup" className="py-16 md:py-24 bg-secondary/30">
-            <div className="container mx-auto">
-                <div className="max-w-xl mx-auto">
-                    <Card>
-                        <CardHeader className="text-center">
-                            <CardTitle className="text-3xl font-headline">Get Started with NovaEd</CardTitle>
-                            <CardDescription>Create an account to start the learning adventure.</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <form className="space-y-4">
-                                <div className="space-y-2 text-left">
-                                    <Label htmlFor="name">Name</Label>
-                                    <Input id="name" placeholder="Your name" />
-                                </div>
-                                <div className="space-y-2 text-left">
-                                    <Label htmlFor="email">Email</Label>
-                                    <Input id="email" type="email" placeholder="you@example.com" />
-                                </div>
-                                <div className="space-y-2 text-left">
-                                    <Label htmlFor="password">Password</Label>
-                                    <Input id="password" type="password" placeholder="••••••••" />
-                                </div>
-                                <Button size="lg" className="w-full bg-btn-gradient text-accent-foreground hover:opacity-90">
-                                    Create Account
-                                </Button>
-                            </form>
-                        </CardContent>
-                    </Card>
-                </div>
+        <section className="py-16 md:py-24 bg-secondary/30">
+          <div className="container mx-auto">
+            <div className="grid grid-cols-3 gap-8 text-center w-full max-w-4xl mx-auto">
+                {stats.map((stat, index) => (
+                    <div key={index} className="space-y-2">
+                        <div className="flex items-center justify-center gap-2">
+                            <div className="text-accent">{stat.icon}</div>
+                            <p className="text-3xl font-bold">{stat.value}</p>
+                        </div>
+                        <p className="text-md text-muted-foreground">{stat.label}</p>
+                    </div>
+                ))}
             </div>
+
+            <div className="mt-20 grid md:grid-cols-2 lg:grid-cols-3 gap-8 w-full max-w-6xl mx-auto">
+                {features.map((feature, index) => (
+                    <div key={index} className="flex items-start text-left gap-4 p-6 rounded-lg bg-card/50">
+                        <div className="p-3 bg-primary/10 rounded-lg text-primary">{feature.icon}</div>
+                        <div>
+                            <h3 className="text-xl font-semibold">{feature.title}</h3>
+                            <p className="text-md text-muted-foreground mt-2">{feature.description}</p>
+                        </div>
+                    </div>
+                ))}
+            </div>
+          </div>
         </section>
 
       </main>
