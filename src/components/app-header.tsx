@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet';
-import { Map, LayoutDashboard, Gamepad2, Award, Menu, UserCircle2, MessageSquareText, FileText } from 'lucide-react';
+import { Map, LayoutDashboard, Gamepad2, Award, Menu, UserCircle2 } from 'lucide-react';
 
 export function AppHeader() {
   const pathname = usePathname();
@@ -17,8 +17,6 @@ export function AppHeader() {
     { href: '/progress', label: 'Progress', icon: Award, exact: true },
     { href: '/free-play', label: 'Free Play', icon: Gamepad2, exact: true },
     { href: '/profile', label: 'Profile', icon: UserCircle2, exact: true },
-    { href: '/prompts', label: 'Prompts', icon: MessageSquareText, exact: true },
-    { href: '/lesson-structure', label: 'Lesson Structure', icon: FileText, exact: true },
   ];
 
   return (
