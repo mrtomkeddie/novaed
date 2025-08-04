@@ -34,10 +34,10 @@ export default function LandingPage() {
                     <h1 className="text-4xl md:text-6xl font-bold tracking-tight">
                         Unlock Your Child's <br /> <span className="text-accent">Full&nbsp;Potential</span>
                     </h1>
-                    <p className="text-lg text-muted-foreground mt-6 max-w-lg mx-auto lg:mx-0">
+                    <p className="text-lg text-muted-foreground mt-6 max-w-lg">
                         NovaEd provides a fun, personalized learning adventure with an AI tutor that adapts to your child's unique pace and style.
                     </p>
-                    <div className="mt-10 grid grid-cols-3 gap-8 text-center w-full max-w-lg mx-auto lg:mx-0">
+                    <div className="mt-10 grid grid-cols-3 gap-8 text-center">
                         {stats.map((stat, index) => (
                             <div key={index} className="space-y-2">
                                 <div className="flex items-center justify-center lg:justify-start gap-2">
