@@ -28,55 +28,56 @@ export default function LandingPage() {
       <LandingHeader />
       <main className="flex-1">
         {/* Hero Section */}
-        <section className="container mx-auto flex flex-col items-center justify-center text-center py-16 md:py-24">
-          <div className="max-w-2xl w-full">
-            <div className="space-y-6">
-                <h1 className="text-4xl md:text-6xl font-bold tracking-tight">
-                    Unlock Your Child's <br /> <span className="text-accent">Full&nbsp;Potential</span>
-                </h1>
-                <p className="text-lg text-muted-foreground max-w-lg mx-auto">
-                    NovaEd provides a fun, personalized learning adventure with an AI tutor that adapts to your child's unique pace and style.
-                </p>
-            </div>
-            
-            <Card className="w-full mt-10">
-                <CardHeader>
-                    <CardTitle className="text-3xl font-headline">Get Started Free</CardTitle>
-                    <CardDescription>Create an account to start the learning adventure.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <form className="space-y-4">
-                        <div className="space-y-2 text-left">
-                            <Label htmlFor="name">Name</Label>
-                            <Input id="name" placeholder="Your name" />
-                        </div>
-                        <div className="space-y-2 text-left">
-                            <Label htmlFor="email">Email</Label>
-                            <Input id="email" type="email" placeholder="you@example.com" />
-                        </div>
-                        <div className="space-y-2 text-left">
-                            <Label htmlFor="password">Password</Label>
-                            <Input id="password" type="password" placeholder="••••••••" />
-                        </div>
-                        <Button size="lg" className="w-full bg-btn-gradient text-accent-foreground hover:opacity-90">
-                            Create Account
-                        </Button>
-                    </form>
-                </CardContent>
-            </Card>
-
-            <div className="mt-12 grid grid-cols-3 gap-8 text-center w-full max-w-lg mx-auto">
-                {stats.map((stat, index) => (
-                    <div key={index} className="space-y-2">
-                        <div className="flex items-center justify-center gap-2">
-                            <div className="text-accent">{stat.icon}</div>
-                            <p className="text-3xl font-bold">{stat.value}</p>
-                        </div>
-                        <p className="text-md text-muted-foreground">{stat.label}</p>
+        <section className="container mx-auto py-16 md:py-24">
+            <div className="grid lg:grid-cols-2 lg:gap-12 items-center">
+                <div className="text-center lg:text-left">
+                    <h1 className="text-4xl md:text-6xl font-bold tracking-tight">
+                        Unlock Your Child's <br /> <span className="text-accent">Full&nbsp;Potential</span>
+                    </h1>
+                    <p className="text-lg text-muted-foreground mt-6 max-w-lg mx-auto lg:mx-0">
+                        NovaEd provides a fun, personalized learning adventure with an AI tutor that adapts to your child's unique pace and style.
+                    </p>
+                    <div className="mt-10 grid grid-cols-3 gap-8 text-center w-full max-w-lg mx-auto lg:mx-0">
+                        {stats.map((stat, index) => (
+                            <div key={index} className="space-y-2">
+                                <div className="flex items-center justify-center lg:justify-start gap-2">
+                                    <div className="text-accent">{stat.icon}</div>
+                                    <p className="text-3xl font-bold">{stat.value}</p>
+                                </div>
+                                <p className="text-md text-muted-foreground">{stat.label}</p>
+                            </div>
+                        ))}
                     </div>
-                ))}
+                </div>
+
+                <div className="mt-12 lg:mt-0">
+                     <Card className="w-full max-w-md mx-auto">
+                        <CardHeader className="text-center">
+                            <CardTitle className="text-3xl font-headline">Get Started Free</CardTitle>
+                            <CardDescription>Create an account to start the learning adventure.</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <form className="space-y-4">
+                                <div className="space-y-2 text-left">
+                                    <Label htmlFor="name">Name</Label>
+                                    <Input id="name" placeholder="Your name" />
+                                </div>
+                                <div className="space-y-2 text-left">
+                                    <Label htmlFor="email">Email</Label>
+                                    <Input id="email" type="email" placeholder="you@example.com" />
+                                </div>
+                                <div className="space-y-2 text-left">
+                                    <Label htmlFor="password">Password</Label>
+                                    <Input id="password" type="password" placeholder="••••••••" />
+                                </div>
+                                <Button size="lg" className="w-full bg-btn-gradient text-accent-foreground hover:opacity-90">
+                                    Create Account
+                                </Button>
+                            </form>
+                        </CardContent>
+                    </Card>
+                </div>
             </div>
-          </div>
         </section>
 
         {/* Features Section */}
