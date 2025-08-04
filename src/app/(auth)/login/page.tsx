@@ -35,7 +35,15 @@ export default function LoginPage() {
               <Input id="email" type="email" placeholder="you@example.com" required />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <div className="flex items-center">
+                <Label htmlFor="password">Password</Label>
+                <Link
+                  href="/forgot-password"
+                  className="ml-auto inline-block text-sm underline"
+                >
+                  Forgot your password?
+                </Link>
+              </div>
               <Input id="password" type="password" required />
             </div>
             <Button type="submit" className="w-full">
@@ -44,7 +52,7 @@ export default function LoginPage() {
           </form>
           <div className="mt-4 text-center text-sm">
             Don&apos;t have an account?{' '}
-            <Link href="/#signup" className="underline">
+            <Link href="/" className="underline">
               Sign up
             </Link>
           </div>
