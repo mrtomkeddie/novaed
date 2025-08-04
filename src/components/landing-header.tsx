@@ -22,9 +22,14 @@ export function LandingHeader() {
         </Link>
         
         <nav className="flex items-center gap-2">
+            <Button asChild variant="ghost" size="sm">
+                <Link href="/login">
+                    Sign In
+                </Link>
+            </Button>
           <Button asChild size="sm" className="bg-btn-gradient text-accent-foreground hover:opacity-90">
-            <Link href="/dashboard">
-              Launch App
+            <Link href="#signup">
+              Sign Up
             </Link>
           </Button>
         </nav>

@@ -5,7 +5,10 @@
 import Link from 'next/link';
 import { LandingHeader } from '@/components/landing-header';
 import { Button } from '@/components/ui/button';
-import { Users, TrendingUp, Star, BookOpenCheck, Sparkles, Lock, Bot } from 'lucide-react';
+import { Users, TrendingUp, Star, BookOpenCheck, Sparkles, Bot } from 'lucide-react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 const stats = [
   { icon: <Users />, value: "1,000+", label: "Students Engaged" },
@@ -17,7 +20,6 @@ const features = [
   { icon: <Bot />, title: "Personalized AI Tutor", description: "Adapts to your child's learning style with patient, step-by-step guidance." },
   { icon: <BookOpenCheck />, title: "Structured Curriculum", description: "Follow clear, expertly-designed learning paths for each core subject." },
   { icon: <Sparkles />, title: "Gamified Learning", description: "Earn XP and take on 'Boss Challenges' to make learning a fun adventure." },
-  { icon: <Lock />, title: "Safe & Secure", description: "Your data is private, encrypted, and never shared. A secure learning environment." },
 ];
 
 
@@ -34,9 +36,6 @@ export default function LandingPage() {
               <p className="text-lg text-muted-foreground">
                   NovaEd provides a fun, personalized learning adventure with an AI tutor that adapts to your child's unique pace and style.
               </p>
-              <Button asChild size="lg" className="bg-btn-gradient text-accent-foreground hover:opacity-90">
-                <Link href="/dashboard">Start Learning Now</Link>
-              </Button>
           </div>
 
           <div className="mt-16 grid grid-cols-3 gap-8 text-center w-full max-w-4xl">
@@ -63,7 +62,43 @@ export default function LandingPage() {
               ))}
           </div>
         </section>
+
+        <section id="signup" className="py-16 md:py-24 bg-secondary/30">
+            <div className="container mx-auto">
+                <div className="max-w-xl mx-auto">
+                    <Card>
+                        <CardHeader className="text-center">
+                            <CardTitle className="text-3xl font-headline">Get Started with NovaEd</CardTitle>
+                            <CardDescription>Create an account to start the learning adventure.</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <form className="space-y-4">
+                                <div className="space-y-2 text-left">
+                                    <Label htmlFor="name">Name</Label>
+                                    <Input id="name" placeholder="Your name" />
+                                </div>
+                                <div className="space-y-2 text-left">
+                                    <Label htmlFor="email">Email</Label>
+                                    <Input id="email" type="email" placeholder="you@example.com" />
+                                </div>
+                                <div className="space-y-2 text-left">
+                                    <Label htmlFor="password">Password</Label>
+                                    <Input id="password" type="password" placeholder="••••••••" />
+                                </div>
+                                <Button size="lg" className="w-full bg-btn-gradient text-accent-foreground hover:opacity-90">
+                                    Create Account
+                                </Button>
+                            </form>
+                        </CardContent>
+                    </Card>
+                </div>
+            </div>
+        </section>
+
       </main>
+      <footer className="py-6 text-center text-sm text-muted-foreground">
+        © {new Date().getFullYear()} NovaEd. All rights reserved.
+      </footer>
     </div>
   );
 }
