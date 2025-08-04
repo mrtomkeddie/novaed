@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import Link from 'next/link';
@@ -109,7 +108,6 @@ export default function LandingPage() {
             </div>
           </div>
         </section>
-
       </main>
       <footer className="py-6 text-center text-sm text-muted-foreground">
         © {new Date().getFullYear()} NovaEd. All rights reserved.
