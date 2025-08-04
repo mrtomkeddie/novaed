@@ -31,22 +31,24 @@ export default function LandingPage() {
         <section className="container mx-auto py-16 md:py-24">
             <div className="grid lg:grid-cols-2 lg:gap-12 items-center">
                 <div className="text-center lg:text-left">
-                    <h1 className="text-4xl md:text-6xl font-bold tracking-tight">
-                        Unlock Your Child's <br /> <span className="text-accent">Full&nbsp;Potential</span>
-                    </h1>
-                    <p className="text-lg text-muted-foreground mt-6 max-w-lg">
-                        NovaEd provides a fun, personalized learning adventure with an AI tutor that adapts to your child's unique pace and style.
-                    </p>
-                    <div className="mt-10 grid grid-cols-3 gap-8 text-center">
-                        {stats.map((stat, index) => (
-                            <div key={index} className="space-y-2">
-                                <div className="flex items-center justify-center lg:justify-start gap-2">
-                                    <div className="text-accent">{stat.icon}</div>
-                                    <p className="text-3xl font-bold">{stat.value}</p>
+                    <div className="max-w-xl mx-auto lg:mx-0">
+                        <h1 className="text-4xl md:text-6xl font-bold tracking-tight">
+                            Unlock Your Child's <br /> <span className="text-accent">Full&nbsp;Potential</span>
+                        </h1>
+                        <p className="text-lg text-muted-foreground mt-6">
+                            NovaEd provides a fun, personalized learning adventure with an AI tutor that adapts to your child's unique pace and style.
+                        </p>
+                        <div className="mt-10 grid grid-cols-3 gap-8 text-center lg:text-left">
+                            {stats.map((stat, index) => (
+                                <div key={index} className="space-y-2">
+                                    <div className="flex items-center justify-center lg:justify-start gap-2">
+                                        <div className="text-accent">{stat.icon}</div>
+                                        <p className="text-3xl font-bold">{stat.value}</p>
+                                    </div>
+                                    <p className="text-md text-muted-foreground">{stat.label}</p>
                                 </div>
-                                <p className="text-md text-muted-foreground">{stat.label}</p>
-                            </div>
-                        ))}
+                            ))}
+                        </div>
                     </div>
                 </div>
 
