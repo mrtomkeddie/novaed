@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -149,7 +148,7 @@ export function DashboardClient() {
                     </CardHeader>
                     <CardContent className="flex flex-col sm:flex-row gap-3">
                          <Button asChild size="lg" className="flex-1 bg-btn-gradient text-accent-foreground hover:opacity-90">
-                            <Link href="/curriculum">
+                            <Link href={currentLesson.subject.href}>
                                 Start Lesson
                                 <ArrowRight className="ml-2"/>
                             </Link>
