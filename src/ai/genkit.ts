@@ -1,3 +1,10 @@
+import {genkit} from 'genkit';
+import {openAI} from 'genkitx-openai';
 
-// This file is no longer used and can be safely deleted.
-export {};
+export const ai = genkit({
+  plugins: [
+    openAI({
+        apiKey: process.env.OPENAI_API_KEY,
+    }),
+  ],
+});
