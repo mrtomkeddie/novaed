@@ -1,118 +1,63 @@
 
-
 'use client';
 
 import Link from 'next/link';
-import { LandingHeader } from '@/components/landing-header';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
-import { Users, TrendingUp, Star, BookOpenCheck, Sparkles, Bot } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
-const stats = [
-  { icon: <Users />, value: "1,000+", label: "Students Engaged" },
-  { icon: <TrendingUp />, value: "95%", label: "Positive Feedback" },
-  { icon: <Star />, value: "4.8★", label: "User Rating" },
-];
-
-const features = [
-  { icon: <Bot />, title: "Personalized AI Tutor", description: "Adapts to your child's learning style with patient, step-by-step guidance." },
-  { icon: <BookOpenCheck />, title: "Structured Curriculum", description: "Follow clear, expertly-designed learning paths for each core subject." },
-  { icon: <Sparkles />, title: "Gamified Learning", description: "Earn XP and take on 'Boss Challenges' to make learning a fun adventure." },
-];
-
-
-export default function LandingPage() {
+export default function LoginPage() {
   return (
-    <div className="flex flex-col min-h-screen bg-background text-foreground">
-      <LandingHeader />
-      <main className="flex-1">
-        {/* Hero Section */}
-        <section className="container mx-auto py-16 md:py-24 px-8 lg:px-12">
-            <div className="grid lg:grid-cols-2 lg:gap-12 items-center">
-                <div className="text-center lg:text-left">
-                    <div className="max-w-xl mx-auto lg:mx-0">
-                        <h1 className="text-4xl md:text-6xl font-bold tracking-tight">
-                            Unlock Your Child's <br /> <span className="text-accent">Full&nbsp;Potential</span>
-                        </h1>
-                        <p className="text-lg text-muted-foreground mt-6">
-                            NovaEd provides a fun, personalized learning adventure with an AI tutor that adapts to your child's unique pace and style.
-                        </p>
-                         <div className="mt-10 grid grid-cols-3 gap-8 text-center">
-                            {stats.map((stat, index) => (
-                                <div key={index} className="space-y-2">
-                                    <div className="flex items-center justify-center gap-2">
-                                        <div className="text-accent">{stat.icon}</div>
-                                        <p className="text-3xl font-bold">{stat.value}</p>
-                                    </div>
-                                    <p className="text-md text-muted-foreground">{stat.label}</p>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                </div>
-
-                <div className="mt-12 lg:mt-0">
-                     <Card className="w-full max-w-md mx-auto">
-                        <CardHeader className="text-center">
-                            <CardTitle className="text-3xl font-headline">Get Started Free</CardTitle>
-                            <CardDescription>Create an account to start the learning adventure.</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <form className="space-y-4">
-                                <div className="space-y-2 text-left">
-                                    <Label htmlFor="name">Name</Label>
-                                    <Input id="name" placeholder="Your name" />
-                                </div>
-                                <div className="space-y-2 text-left">
-                                    <Label htmlFor="email">Email</Label>
-                                    <Input id="email" type="email" placeholder="you@example.com" />
-                                </div>
-                                <div className="space-y-2 text-left">
-                                    <Label htmlFor="password">Password</Label>
-                                    <Input id="password" type="password" placeholder="••••••••" />
-                                </div>
-                                <Button size="lg" className="w-full bg-btn-gradient text-accent-foreground hover:opacity-90" asChild>
-                                    <Link href="/dashboard">Create Account</Link>
-                                </Button>
-                            </form>
-                             <div className="mt-4 text-center text-sm">
-                                Already have an account?{' '}
-                                <Link href="/login" className="underline">
-                                Sign In
-                                </Link>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </div>
+    <div className="flex flex-col min-h-screen items-center justify-center bg-secondary/30 p-4">
+      <div className="absolute top-6 left-6">
+        <Link href="/" className="flex items-center gap-2">
+          <Image
+            src="/logo.png"
+            alt="NovaEd Logo"
+            width={100}
+            height={40}
+            priority
+            data-ai-hint="logo"
+          />
+        </Link>
+      </div>
+      <Card className="w-full max-w-sm">
+        <CardHeader className="text-center">
+          <CardTitle className="text-2xl font-headline">Welcome Back!</CardTitle>
+          <CardDescription>Sign in to continue your learning journey.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input id="email" type="email" placeholder="you@example.com" required />
             </div>
-        </section>
-
-        {/* Features Section */}
-        <section className="py-16 md:py-24 bg-secondary/30">
-          <div className="container mx-auto">
-             <div className="text-center mb-12">
-                <h2 className="text-3xl md:text-4xl font-bold tracking-tight">Why Choose NovaEd?</h2>
-                <p className="text-lg text-muted-foreground mt-3 max-w-2xl mx-auto">A smarter, more engaging way to learn from home.</p>
+            <div className="space-y-2">
+              <div className="flex items-center">
+                <Label htmlFor="password">Password</Label>
+                <Link
+                  href="/forgot-password"
+                  className="ml-auto inline-block text-sm underline"
+                >
+                  Forgot your password?
+                </Link>
+              </div>
+              <Input id="password" type="password" required />
             </div>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 w-full max-w-6xl mx-auto">
-                {features.map((feature, index) => (
-                    <div key={index} className="flex items-start text-left gap-4 p-6 rounded-lg bg-card/50">
-                        <div className="p-3 bg-primary/10 rounded-lg text-primary shrink-0">{feature.icon}</div>
-                        <div>
-                            <h3 className="text-xl font-semibold">{feature.title}</h3>
-                            <p className="text-md text-muted-foreground mt-2">{feature.description}</p>
-                        </div>
-                    </div>
-                ))}
-            </div>
+            <Button type="submit" className="w-full" asChild>
+                <Link href="/dashboard">Sign In</Link>
+            </Button>
+          </form>
+          <div className="mt-4 text-center text-sm">
+            Don&apos;t have an account?{' '}
+            <Link href="/" className="underline">
+              Sign up
+            </Link>
           </div>
-        </section>
-      </main>
-      <footer className="py-6 text-center text-sm text-muted-foreground">
-        © {new Date().getFullYear()} NovaEd. All rights reserved.
-      </footer>
+        </CardContent>
+      </Card>
     </div>
   );
 }
