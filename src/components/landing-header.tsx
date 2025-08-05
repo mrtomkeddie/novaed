@@ -23,7 +23,7 @@ export function LandingHeader() {
         
         <nav className="flex items-center gap-2">
             <Button asChild variant="ghost">
-                <Link href="/login">
+                <Link href="/">
                     Sign In
                 </Link>
             </Button>
