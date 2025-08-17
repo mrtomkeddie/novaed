@@ -79,25 +79,29 @@ export default function ChatPage() {
 
   const sendUserMessageAndGetFeedback = async (content: string) => {
     if ((!content.trim()) || isNovaTyping || isLogging || !subject || !currentTopic) return;
-
+  
+    const isFirstInteraction = messages.length === 1 && content === "Let's Go!";
+    
     const userMessage: Message = { role: 'user', content };
-    let newMessages = [...messages, userMessage];
-
-    // If this is the first interaction, we replace the assistant's greeting with the user's click
-    // and then add a "start" message for the AI to process.
-    if (messages.length === 1 && content === "Let's Go!") {
-        newMessages = [{ role: 'user', content: 'start' }];
+    let currentMessages = messages;
+    
+    // For the first interaction, we create a clean history to send to the AI
+    // to avoid the double-greeting bug.
+    if (isFirstInteraction) {
+      currentMessages = [...messages, userMessage];
+    } else {
+      currentMessages = [...messages, userMessage];
+      setMessages(currentMessages);
     }
     
-    setMessages(newMessages);
     setIsNovaTyping(true);
     setInput('');
-
-    const simplifiedHistory = newMessages.map(m => ({
+  
+    const simplifiedHistory = currentMessages.map(m => ({
         role: m.role,
         content: m.content,
     }));
-
+  
     try {
       const response = await fetch('/api/get-ai-tutor-feedback', {
         method: 'POST',
@@ -109,16 +113,17 @@ export default function ChatPage() {
           subject: subject.name,
         }),
       });
-
+  
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Failed to get AI feedback');
       }
-
+  
       const result = await response.json();
       
+      // We now add the response to our *original* messages array.
       setMessages([
-        ...newMessages,
+        ...currentMessages,
         {
           role: 'assistant',
           content: result.feedback,
@@ -134,7 +139,7 @@ export default function ChatPage() {
         title: 'An AI Error Occurred',
         description: error.message || 'There was a problem getting a response from Nova. Please try again.',
       });
-       setMessages([...newMessages, { role: 'assistant', content: "Sorry, I ran into a problem. Please try sending your message again."}])
+       setMessages([...currentMessages, { role: 'assistant', content: "Sorry, I ran into a problem. Please try sending your message again."}])
     } finally {
       setIsNovaTyping(false);
     }
