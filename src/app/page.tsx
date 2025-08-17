@@ -25,14 +25,14 @@ export default function LoginPage() {
       </div>
       <Card className="w-full max-w-sm">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-headline">Welcome Back!</CardTitle>
-          <CardDescription>Sign in to continue your learning journey.</CardDescription>
+          <CardTitle className="text-2xl font-headline">Welcome!</CardTitle>
+          <CardDescription>Sign in or create an account to start learning.</CardDescription>
         </CardHeader>
         <CardContent>
           <form className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" placeholder="you@example.com" required />
+              <Input id="email" type="email" placeholder="you@example.com" defaultValue="learner@novaed.app" />
             </div>
             <div className="space-y-2">
               <div className="flex items-center">
@@ -44,18 +44,15 @@ export default function LoginPage() {
                   Forgot your password?
                 </Link>
               </div>
-              <Input id="password" type="password" required />
+              <Input id="password" type="password" defaultValue="password" />
             </div>
             <Button type="submit" className="w-full" asChild>
                 <Link href="/dashboard">Sign In</Link>
             </Button>
+            <Button variant="secondary" className="w-full" asChild>
+                <Link href="/dashboard">Create an account</Link>
+            </Button>
           </form>
-          <div className="mt-4 text-center text-sm">
-            Don&apos;t have an account?{' '}
-            <Link href="/" className="underline">
-              Sign up
-            </Link>
-          </div>
         </CardContent>
       </Card>
     </div>
