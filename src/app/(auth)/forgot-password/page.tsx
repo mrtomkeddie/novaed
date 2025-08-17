@@ -29,7 +29,7 @@ export default function ForgotPasswordPage() {
             </CardDescription>
             </CardHeader>
             <CardContent>
-            <form className="space-y-4">
+            <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
                 <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input
@@ -39,11 +39,11 @@ export default function ForgotPasswordPage() {
                     required
                 />
                 </div>
-                <Button type="submit" className="w-full">
-                    Send Reset Link
+                <Button type="submit" className="w-full" asChild>
+                    <Link href="/">Send Reset Link</Link>
                 </Button>
                 <Button variant="outline" className="w-full" asChild>
-                    <Link href="/login">Back to Sign In</Link>
+                    <Link href="/">Back to Sign In</Link>
                 </Button>
             </form>
             </CardContent>
