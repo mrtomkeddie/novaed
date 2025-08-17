@@ -24,7 +24,7 @@ const GetAITutorFeedbackInputSchema = z.object({
 
 // Define the output schema for the AI's feedback.
 const GetAITutorFeedbackOutputSchema = z.object({
-  feedback: z.string().describe('The AI tutor\'s next message to the user.'),
+  feedback: z.string().describe("The AI tutor's next message to the user."),
   multipleChoiceOptions: z.array(z.string()).nullable().describe('An optional list of multiple-choice answers for the user.'),
 });
 export type GetAITutorFeedbackOutput = z.infer<typeof GetAITutorFeedbackOutputSchema>;

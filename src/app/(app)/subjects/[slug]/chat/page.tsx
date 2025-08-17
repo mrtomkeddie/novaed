@@ -32,13 +32,6 @@ type Message = {
   multipleChoiceOptions?: string[] | null;
 };
 
-// Dummy user for chat functionality without real authentication
-const dummyUser = {
-    uid: 'dummy-user-id',
-    displayName: 'Learner',
-    email: 'learner@novaed.app'
-};
-
 export default function ChatPage() {
   const params = useParams();
   const router = useRouter();
@@ -53,89 +46,145 @@ export default function ChatPage() {
   const [isLogging, setIsLogging] = useState(false);
   const [currentTopic, setCurrentTopic] = useState<Lesson | null>(null);
   const [isCalcOpen, setIsCalcOpen] = useState(false);
+  const [tutorTheme, setTutorTheme] = useState('mario');
 
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Determine the starting topic and show a welcome message
+    const savedTheme = localStorage.getItem('tutorTheme') || 'mario';
+    setTutorTheme(savedTheme);
+
     if (subject) {
       setIsLoading(true);
-      // In this dummy version, we just start with the first lesson.
       const topic = subject.lessons[0];
       setCurrentTopic(topic);
       
       const initialMessage: Message = {
-        role: 'assistant',
-        content: `Hey ${dummyUser.displayName}! Ready to start our lesson on "${topic.title}"?`,
-        multipleChoiceOptions: ["Let's Go!"],
+        role: 'user',
+        content: `Let's start the lesson on "${topic.title}"`,
       };
       
-      setMessages([initialMessage]);
+      sendUserMessageAndGetFeedback(initialMessage.content, true);
       setIsLoading(false);
     }
   }, [subject]);
 
   useEffect(() => {
-    // Auto-scroll to the latest message
     const viewport = scrollAreaRef.current?.querySelector('div[data-radix-scroll-area-viewport]');
     if (viewport) {
       viewport.scrollTop = viewport.scrollHeight;
     }
   }, [messages, isNovaTyping]);
 
-  const handleSend = async () => {
-    if (!input.trim() || isNovaTyping || isLogging) return;
+  const sendUserMessageAndGetFeedback = async (content: string, isInitialMessage = false) => {
+    if ((!content.trim() && !isInitialMessage) || isNovaTyping || isLogging || !subject || !currentTopic) return;
 
-    const userMessage: Message = { role: 'user', content: input };
-    setMessages((prev) => [...prev, userMessage]);
-    setInput('');
+    const userMessage: Message = { role: 'user', content };
+    const newMessages = isInitialMessage ? messages : [...messages, userMessage];
+    
+    if(!isInitialMessage) {
+        setMessages(newMessages);
+    }
+
     setIsNovaTyping(true);
+    setInput('');
 
-    // Simulate AI response for demo purposes
-    setTimeout(() => {
-      const assistantMessage: Message = {
-        role: 'assistant',
-        content: "This is a simulated response. The AI tutor is currently offline.",
-        multipleChoiceOptions: ["Got it", "End Lesson"],
-      };
-      setMessages((prev) => [...prev, assistantMessage]);
+    const simplifiedHistory = newMessages.map(m => ({
+        role: m.role,
+        content: m.content,
+    }));
+
+    try {
+      const response = await fetch('/api/get-ai-tutor-feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tutorTheme,
+          topicTitle: currentTopic.title,
+          chatHistory: simplifiedHistory,
+          subject: subject.name,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to get AI feedback');
+      }
+
+      const result = await response.json();
+      
+      setMessages([
+        ...newMessages,
+        {
+          role: 'assistant',
+          content: result.feedback,
+          multipleChoiceOptions: result.multipleChoiceOptions,
+        },
+      ]);
+      
+    } catch (error: any)
+    {
+      console.error('Error getting feedback:', error);
+      toast({
+        variant: 'destructive',
+        title: 'An AI Error Occurred',
+        description: error.message || 'There was a problem getting a response from Nova. Please try again.',
+      });
+       setMessages([...newMessages, { role: 'assistant', content: "Sorry, I ran into a problem. Please try sending your message again."}])
+    } finally {
       setIsNovaTyping(false);
-    }, 1500);
-  };
-
-  const handleOptionClick = (option: string) => {
-    if (option === 'End Lesson') {
-      // Find the "End Lesson" button and click it to trigger the dialog
-      document.getElementById('end-lesson-trigger')?.click();
-    } else {
-        const userMessage: Message = { role: 'user', content: option };
-        setMessages((prev) => [...prev, userMessage]);
-        setIsNovaTyping(true);
-
-        // Simulate AI response for demo purposes
-        setTimeout(() => {
-            const assistantMessage: Message = {
-                role: 'assistant',
-                content: "This is a simulated response as the AI is offline. You can select another option or end the lesson.",
-                multipleChoiceOptions: ["Okay", "End Lesson"],
-            };
-            setMessages((prev) => [...prev, assistantMessage]);
-            setIsNovaTyping(false);
-        }, 1500);
     }
   };
 
-  const handleEndLesson = () => {
+  const handleEndLesson = async () => {
+    if (!subject || !currentTopic) return;
     setIsLogging(true);
     toast({
-      title: 'Lesson Ended (Demo)',
-      description: 'Your progress would be saved here. Returning to dashboard.',
+      title: 'Ending lesson...',
+      description: 'Nova is summarizing your progress.',
     });
-    // Simulate saving and redirect
-    setTimeout(() => {
+
+    const simplifiedHistory = messages.map(m => ({
+        role: m.role,
+        content: m.content,
+    }));
+
+    try {
+      const summaryResponse = await fetch('/api/generate-lesson-summary', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          subject: subject.name,
+          topicTitle: currentTopic.title,
+          topicId: currentTopic.id,
+          chatHistory: simplifiedHistory,
+        }),
+      });
+
+      if (!summaryResponse.ok) {
+        throw new Error('Failed to generate lesson summary');
+      }
+
+      const summary = await summaryResponse.json();
+      
+      toast({
+          title: 'Lesson Summary',
+          description: <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4"><code className="text-white">{JSON.stringify(summary, null, 2)}</code></pre>,
+          duration: 15000,
+        });
+
       router.push('/dashboard');
+
+    } catch (error: any) {
+      console.error('Error ending lesson:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Error Ending Lesson',
+        description: error.message || 'Could not save your progress. Please try again.',
+      });
+    } finally {
       setIsLogging(false);
-    }, 1500);
+    }
   }
 
   const lastMessage = messages[messages.length - 1];
@@ -178,7 +227,7 @@ export default function ChatPage() {
             <div className="absolute right-2 sm:right-4">
                 <AlertDialog>
                 <AlertDialogTrigger asChild>
-                    <Button id="end-lesson-trigger" variant="outline" disabled={isLogging || isNovaTyping}>
+                    <Button variant="outline" disabled={isLogging || isNovaTyping}>
                     {isLogging ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                     End Lesson
                     </Button>
@@ -187,7 +236,7 @@ export default function ChatPage() {
                     <AlertDialogHeader>
                     <AlertDialogTitle>Are you sure you want to end the lesson?</AlertDialogTitle>
                     <AlertDialogDescription>
-                        This will end your current session and return you to the dashboard.
+                        This will save your progress and return you to the dashboard.
                     </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
@@ -239,7 +288,7 @@ export default function ChatPage() {
                               key={i}
                               variant="outline"
                               className="w-full sm:w-auto justify-center text-base px-6 py-3 h-auto"
-                              onClick={() => handleOptionClick(option)}
+                              onClick={() => sendUserMessageAndGetFeedback(option)}
                             >
                               {option}
                             </Button>
@@ -275,7 +324,7 @@ export default function ChatPage() {
         </main>
 
         <footer className="p-2 sm:p-4 border-t bg-card">
-          <form onSubmit={(e) => { e.preventDefault(); handleSend(); }} className="flex items-center gap-2 sm:gap-3">
+          <form onSubmit={(e) => { e.preventDefault(); sendUserMessageAndGetFeedback(input); }} className="flex items-center gap-2 sm:gap-3">
             <Input
               value={input}
               onChange={(e) => setInput(e.target.value)}

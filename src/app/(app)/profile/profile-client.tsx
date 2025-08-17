@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { AppHeader } from '@/components/app-header';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -27,17 +27,24 @@ const dummyProfile = {
 export function ProfileClient() {
   const { toast } = useToast();
   const [firstName, setFirstName] = useState(dummyProfile.displayName);
-  const [tutorTheme, setTutorTheme] = useState(dummyProfile.tutorTheme);
+  const [tutorTheme, setTutorTheme] = useState('mario');
   const [isSaving, setIsSaving] = useState(false);
+
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('tutorTheme') || 'mario';
+    setTutorTheme(savedTheme);
+  }, []);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSaving(true);
-    // Simulate a save operation
+    
+    localStorage.setItem('tutorTheme', tutorTheme);
+
     setTimeout(() => {
         toast({
             title: 'Profile Updated!',
-            description: 'Your changes have been saved successfully (demo).',
+            description: 'Your changes have been saved successfully.',
         });
         setIsSaving(false);
     }, 1000);

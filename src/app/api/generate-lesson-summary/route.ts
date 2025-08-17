@@ -1,15 +1,15 @@
 'use server';
 
 import { NextResponse } from 'next/server';
-import { getAITutorFeedback } from '@/ai/flows/get-ai-tutor-feedback';
+import { generateLessonSummary } from '@/ai/flows/generate-lesson-summary';
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const feedback = await getAITutorFeedback(body);
-    return NextResponse.json(feedback);
+    const summary = await generateLessonSummary(body);
+    return NextResponse.json(summary);
   } catch (error: any) {
-    console.error('Error in get-ai-tutor-feedback API route:', error);
+    console.error('Error in generate-lesson-summary API route:', error);
     return NextResponse.json({ error: error.message || 'An unexpected error occurred' }, { status: 500 });
   }
 }
