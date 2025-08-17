@@ -50,24 +50,25 @@ export default function ChatPage() {
 
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    const savedTheme = localStorage.getItem('tutorTheme') || 'mario';
-    setTutorTheme(savedTheme);
+    useEffect(() => {
+        const savedTheme = localStorage.getItem('tutorTheme') || 'mario';
+        setTutorTheme(savedTheme);
 
-    if (subject) {
-      setIsLoading(true);
-      const topic = subject.lessons[0];
-      setCurrentTopic(topic);
-      
-      const initialMessage: Message = {
-        role: 'user',
-        content: `Let's start the lesson on "${topic.title}"`,
-      };
-      
-      sendUserMessageAndGetFeedback(initialMessage.content, true);
-      setIsLoading(false);
-    }
-  }, [subject]);
+        if (subject) {
+            setIsLoading(true);
+            const topic = subject.lessons[0];
+            setCurrentTopic(topic);
+            
+            const initialMessage: Message = {
+                role: 'assistant',
+                content: `Hey! Ready to start our lesson on "${topic.title}"?`,
+                multipleChoiceOptions: ["Let's Go!"],
+            };
+            
+            setMessages([initialMessage]);
+            setIsLoading(false);
+        }
+    }, [subject]);
 
   useEffect(() => {
     const viewport = scrollAreaRef.current?.querySelector('div[data-radix-scroll-area-viewport]');
@@ -76,16 +77,19 @@ export default function ChatPage() {
     }
   }, [messages, isNovaTyping]);
 
-  const sendUserMessageAndGetFeedback = async (content: string, isInitialMessage = false) => {
-    if ((!content.trim() && !isInitialMessage) || isNovaTyping || isLogging || !subject || !currentTopic) return;
+  const sendUserMessageAndGetFeedback = async (content: string) => {
+    if ((!content.trim()) || isNovaTyping || isLogging || !subject || !currentTopic) return;
 
     const userMessage: Message = { role: 'user', content };
-    const newMessages = isInitialMessage ? messages : [...messages, userMessage];
-    
-    if(!isInitialMessage) {
-        setMessages(newMessages);
-    }
+    let newMessages = [...messages, userMessage];
 
+    // If this is the first interaction, we replace the assistant's greeting with the user's click
+    // and then add a "start" message for the AI to process.
+    if (messages.length === 1 && content === "Let's Go!") {
+        newMessages = [{ role: 'user', content: 'start' }];
+    }
+    
+    setMessages(newMessages);
     setIsNovaTyping(true);
     setInput('');
 
