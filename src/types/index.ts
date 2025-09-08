@@ -9,6 +9,8 @@ export type Lesson = {
   title: string;
   content?: string;
   completed: boolean;
+  isRecap?: boolean;
+  prerequisites?: string[];
 };
 
 export type Subject = {
