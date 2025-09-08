@@ -132,27 +132,26 @@ export default function ChatPage() {
 
   const sendUserMessageAndGetFeedback = async (content: string) => {
     if (isNovaTyping || isLogging || !subject || !currentTopic) return;
-
-    const isFirstInteraction = messages.length === 1 && (content === "Let's Go!");
-    
-    const userMessage: Message = { role: 'user', content };
+  
+    const isFirstInteraction = messages.length === 1 && content === "Let's Go!";
     let currentMessages = messages;
-    
-    if (isFirstInteraction) {
-        currentMessages = [{ role: 'user', content: 'start' }];
-    } else {
-        currentMessages = [...messages, userMessage];
-        setMessages(currentMessages);
+  
+    if (!isFirstInteraction) {
+      const userMessage: Message = { role: 'user', content };
+      currentMessages = [...messages, userMessage];
+      setMessages(currentMessages);
     }
-    
+  
     setIsNovaTyping(true);
     setInput('');
-
-    const simplifiedHistory = currentMessages.map(m => ({
-        role: m.role,
-        content: m.feedback || m.content,
-    }));
-
+  
+    const chatHistoryForApi = isFirstInteraction
+      ? [{ role: 'user', content: 'start' }]
+      : currentMessages.map(m => ({
+          role: m.role,
+          content: m.feedback || m.content,
+      }));
+  
     try {
       const response = await fetch('/api/get-ai-tutor-feedback', {
         method: 'POST',
@@ -160,38 +159,38 @@ export default function ChatPage() {
         body: JSON.stringify({
           userId: userId,
           topicTitle: currentTopic.title,
-          chatHistory: simplifiedHistory,
+          chatHistory: chatHistoryForApi,
           subject: subject.name,
         }),
       });
-
+  
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Failed to get AI feedback');
       }
-
+  
       const result = await response.json();
-      const finalMessages = isFirstInteraction ? messages : currentMessages;
-
-      setMessages([
-        ...finalMessages,
-        {
-          role: 'assistant',
-          content: result.feedback,
-          feedback: result.feedback,
-          multipleChoiceOptions: result.multipleChoiceOptions,
-        },
-      ]);
       
-    } catch (error: any)
-    {
+      const assistantMessage: Message = {
+        role: 'assistant',
+        content: result.feedback,
+        feedback: result.feedback,
+        multipleChoiceOptions: result.multipleChoiceOptions,
+      };
+      
+      setMessages(prevMessages => [...prevMessages, assistantMessage]);
+  
+    } catch (error: any) {
       console.error('Error getting feedback:', error);
       toast({
         variant: 'destructive',
         title: 'An AI Error Occurred',
         description: error.message || 'There was a problem getting a response from Nova. Please try again.',
       });
-      setMessages(messages); // Restore previous state
+      // Restore previous state without the user message if it wasn't the first interaction
+      if (!isFirstInteraction) {
+        setMessages(messages);
+      }
     } finally {
       setIsNovaTyping(false);
     }
