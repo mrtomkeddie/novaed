@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet';
-import { Map, LayoutDashboard, Gamepad2, Award, Menu, UserCircle2 } from 'lucide-react';
+import { Map, LayoutDashboard, Gamepad2, Award, Menu, UserCircle2, Bot, FileText } from 'lucide-react';
 
 export function AppHeader() {
   const pathname = usePathname();
@@ -16,6 +16,8 @@ export function AppHeader() {
     { href: '/curriculum', label: 'Subjects', icon: Map, exact: false },
     { href: '/progress', label: 'Progress', icon: Award, exact: true },
     { href: '/free-play', label: 'Free Play', icon: Gamepad2, exact: true },
+    { href: '/prompts', label: 'Tutor Prompts', icon: Bot, exact: true },
+    { href: '/lesson-structure', label: 'Lesson Structure', icon: FileText, exact: true },
     { href: '/profile', label: 'Profile', icon: UserCircle2, exact: true },
   ];
 
@@ -72,6 +74,11 @@ export function AppHeader() {
                   );
                 })}
               </nav>
+               <div className="p-4 border-t">
+                <Button variant="outline" className="w-full" asChild>
+                  <Link href="/">Sign Out</Link>
+                </Button>
+              </div>
             </div>
           </SheetContent>
         </Sheet>
