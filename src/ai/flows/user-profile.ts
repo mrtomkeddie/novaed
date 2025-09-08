@@ -16,10 +16,15 @@ function initializeFirebaseAdmin() {
     if (admin.apps.length > 0) {
         return admin.app();
     }
-    return admin.initializeApp({
-        credential: admin.credential.applicationDefault(),
-        projectId: process.env.FIREBASE_PROJECT_ID,
-    });
+    try {
+        return admin.initializeApp({
+            credential: admin.credential.applicationDefault(),
+            projectId: process.env.FIREBASE_PROJECT_ID,
+        });
+    } catch (e) {
+        console.error("Firebase Admin initialization error", e);
+        return null;
+    }
 }
 
 const UserProfileSchema = z.object({

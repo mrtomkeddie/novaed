@@ -18,10 +18,16 @@ function initializeFirebaseAdmin() {
         return admin.app();
     }
     // Make sure to configure GOOGLE_APPLICATION_CREDENTIALS environment variable.
-    return admin.initializeApp({
-        credential: admin.credential.applicationDefault(),
-        projectId: process.env.FIREBASE_PROJECT_ID,
-    });
+    try {
+        return admin.initializeApp({
+            credential: admin.credential.applicationDefault(),
+            projectId: process.env.FIREBASE_PROJECT_ID,
+        });
+    } catch (e) {
+        console.error("Firebase Admin initialization error", e);
+        // Return null or handle error appropriately if initialization fails
+        return null;
+    }
 }
 
 const GetUserProgressInputSchema = z.object({
