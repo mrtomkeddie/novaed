@@ -9,15 +9,15 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
-import { saveUserProfile } from '@/ai/flows/user-profile';
+import { saveUserProfile, getUserProfile } from '@/ai/flows/user-profile';
 
 // Hardcoded user for "Charlie"
 const userId = 'charlie';
 
 export function ProfileClient() {
   const { toast } = useToast();
-  const [displayName, setDisplayName] = useState('Charlie');
-  const [email, setEmail] = useState('charlie@novaed.app');
+  const [displayName, setDisplayName] = useState('');
+  const [email, setEmail] = useState('charlie@novaed.app'); // Keep email static for now
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -25,16 +25,9 @@ export function ProfileClient() {
     async function fetchProfile() {
       setIsLoading(true);
       try {
-        const response = await fetch('/api/get-user-profile', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ userId }),
-        });
-        if (response.ok) {
-          const profile = await response.json();
-          if (profile) {
-            setDisplayName(profile.displayName || 'Charlie');
-          }
+        const profile = await getUserProfile({ userId });
+        if (profile) {
+          setDisplayName(profile.displayName || 'Charlie');
         }
       } catch (error) {
         console.error("Failed to fetch profile", error);
@@ -53,6 +46,13 @@ export function ProfileClient() {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!displayName) {
+        toast({
+            variant: "destructive",
+            title: "Display name cannot be empty.",
+        });
+        return;
+    }
     setIsSaving(true);
     try {
       await saveUserProfile({

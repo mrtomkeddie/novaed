@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
@@ -11,8 +12,9 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { subjects } from '@/data/subjects';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
-import type { Lesson } from '@/types';
+import type { Lesson, UserProfile } from '@/types';
 import { Calculator } from '@/components/calculator';
+import { getUserProfile } from '@/ai/flows/user-profile';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -32,12 +34,8 @@ type Message = {
   multipleChoiceOptions?: string[] | null;
 };
 
-// Dummy user for demonstration purposes
-const dummyUser = {
-    uid: 'charlie', // Hardcoded user ID for "Charlie"
-    displayName: 'Charlie',
-    email: 'charlie@novaed.app'
-};
+// Hardcoded user for "Charlie"
+const userId = 'charlie';
 
 export default function ChatPage() {
   const params = useParams();
@@ -53,6 +51,7 @@ export default function ChatPage() {
   const [isLogging, setIsLogging] = useState(false);
   const [currentTopic, setCurrentTopic] = useState<Lesson | null>(null);
   const [isCalcOpen, setIsCalcOpen] = useState(false);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
 
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
@@ -61,10 +60,13 @@ export default function ChatPage() {
       const determineCurrentTopicAndGreet = async () => {
         setIsLoading(true);
         try {
+          const profile = await getUserProfile({ userId });
+          setUserProfile(profile);
+          
           const response = await fetch('/api/get-user-progress', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userId: dummyUser.uid, subjectId: subject.id }),
+            body: JSON.stringify({ userId, subjectId: subject.id }),
           });
 
           if (!response.ok) {
@@ -76,23 +78,21 @@ export default function ChatPage() {
 
           if (lastProgress && lastProgress.topic_id) {
             const lastTopicIndex = subject.lessons.findIndex(l => l.id === lastProgress.topic_id);
-            // If the last lesson is found and it's not the final lesson in the curriculum
             if (lastTopicIndex > -1 && lastTopicIndex + 1 < subject.lessons.length) {
               topic = subject.lessons[lastTopicIndex + 1];
             } else {
-              // If all lessons are done, or something is out of sync, start from the first one.
               topic = subject.lessons[0];
             }
           } else {
-            // No progress for this subject, start from the first lesson.
             topic = subject.lessons[0];
           }
           
           setCurrentTopic(topic);
+          const welcomeName = profile?.displayName || 'Learner';
           
           const initialMessage: Message = {
             role: 'assistant',
-            content: `Hey ${dummyUser.displayName}! Ready to start our lesson on "${topic.title}"?`,
+            content: `Hey ${welcomeName}! Ready to start our lesson on "${topic.title}"?`,
             multipleChoiceOptions: ["Let's Go!"],
           };
           
@@ -102,9 +102,10 @@ export default function ChatPage() {
           console.error('Error determining topic:', error);
           const topic = subject.lessons[0];
           setCurrentTopic(topic);
+          const welcomeName = userProfile?.displayName || 'Learner';
           const errorMessage: Message = {
               role: 'assistant',
-              content: `Hey ${dummyUser.displayName}! Ready to start with "${topic.title}"?`,
+              content: `Hey ${welcomeName}! Ready to start with "${topic.title}"?`,
               multipleChoiceOptions: ["Let's Go!"]
           };
           setMessages([errorMessage]);
@@ -120,7 +121,7 @@ export default function ChatPage() {
 
       determineCurrentTopicAndGreet();
     }
-  }, [subject, toast]);
+  }, [subject, toast, userProfile?.displayName]);
 
   useEffect(() => {
     const viewport = scrollAreaRef.current?.querySelector('div[data-radix-scroll-area-viewport]');
@@ -138,10 +139,10 @@ export default function ChatPage() {
     let currentMessages = messages;
     
     if (isFirstInteraction) {
-      currentMessages = [{ role: 'user', content: 'start' }];
+        currentMessages = [{ role: 'user', content: 'start' }];
     } else {
-      currentMessages = [...messages, userMessage];
-      setMessages(currentMessages);
+        currentMessages = [...messages, userMessage];
+        setMessages(currentMessages);
     }
     
     setIsNovaTyping(true);
@@ -157,7 +158,7 @@ export default function ChatPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          userId: dummyUser.uid,
+          userId: userId,
           topicTitle: currentTopic.title,
           chatHistory: simplifiedHistory,
           subject: subject.name,
@@ -230,7 +231,7 @@ export default function ChatPage() {
       const logResponse = await fetch('/api/log-progress', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: dummyUser.uid, summary }),
+        body: JSON.stringify({ userId: userId, summary }),
       });
 
       if (!logResponse.ok) {

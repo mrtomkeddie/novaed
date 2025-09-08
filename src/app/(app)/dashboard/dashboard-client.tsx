@@ -10,8 +10,10 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Timetable } from '@/components/timetable';
-import { ArrowRight, Gamepad2, SkipForward, CalendarDays, CheckCircle, RefreshCw } from 'lucide-react';
+import { ArrowRight, Gamepad2, SkipForward, CalendarDays, CheckCircle, RefreshCw, Loader2 } from 'lucide-react';
 import type { Subject } from '@/types';
+import { getUserProfile } from '@/ai/flows/user-profile';
+import { useToast } from '@/hooks/use-toast';
 
 type DailyLesson = {
     subjectName: string;
@@ -19,65 +21,78 @@ type DailyLesson = {
     subject: Subject | undefined;
 }
 
+const userId = 'charlie';
+
 export function DashboardClient() {
   const [todaysLessons, setTodaysLessons] = useState<DailyLesson[]>([]);
   const [currentLessonIndex, setCurrentLessonIndex] = useState(0);
-  const [isClient, setIsClient] = useState(false);
   const [greeting, setGreeting] = useState("Welcome");
-
-  const welcomeName = 'learner'; // Using a dummy name
-  
-  useEffect(() => {
-    // This effect runs only on the client, after initial render
-    setIsClient(true);
-
-    const returnGreetings = [
-      "Welcome back", "Great to see you again", "Let's get learning",
-      "Ready for a new challenge?", "Time for another adventure",
-    ];
-    setGreeting(returnGreetings[Math.floor(Math.random() * returnGreetings.length)]);
-
-  }, []);
-
+  const [welcomeName, setWelcomeName] = useState('Learner');
+  const [isLoading, setIsLoading] = useState(true);
+  const { toast } = useToast();
 
   useEffect(() => {
-    if (isClient) {
-        // Determine today's lessons from timetable
-        const today = new Date().toLocaleDateString('en-US', { weekday: 'long' });
-        const scheduledLessons = timetableData.find(d => d.day === today)?.periods || [];
-        
-        const lessonsWithSubjects: DailyLesson[] = scheduledLessons.map(lessonName => {
-            const subject = subjects.find(s => s.name.toLowerCase() === lessonName.toLowerCase());
-            return {
-                subjectName: lessonName,
-                lessonTitle: subject?.description || 'Time to learn!',
-                subject: subject,
-            };
-        }).filter(l => l.subject);
+    // Determine today's lessons from timetable
+    const today = new Date().toLocaleDateString('en-US', { weekday: 'long' });
+    const scheduledLessons = timetableData.find(d => d.day === today)?.periods || [];
+    
+    const lessonsWithSubjects: DailyLesson[] = scheduledLessons.map(lessonName => {
+        const subject = subjects.find(s => s.name.toLowerCase() === lessonName.toLowerCase());
+        return {
+            subjectName: lessonName,
+            lessonTitle: subject?.description || 'Time to learn!',
+            subject: subject,
+        };
+    }).filter(l => l.subject);
 
-        setTodaysLessons(lessonsWithSubjects);
+    setTodaysLessons(lessonsWithSubjects);
 
-        // Get today's progress from localStorage
-        const savedProgress = localStorage.getItem('dailyProgress');
-        const todayStr = new Date().toISOString().split('T')[0];
-        if (savedProgress) {
-            try {
-                const { date, index } = JSON.parse(savedProgress);
-                if (date === todayStr) {
-                    setCurrentLessonIndex(index);
-                } else {
-                    localStorage.setItem('dailyProgress', JSON.stringify({ date: todayStr, index: 0 }));
-                    setCurrentLessonIndex(0);
-                }
-            } catch (e) {
+    // Get today's progress from localStorage
+    const savedProgress = localStorage.getItem('dailyProgress');
+    const todayStr = new Date().toISOString().split('T')[0];
+    if (savedProgress) {
+        try {
+            const { date, index } = JSON.parse(savedProgress);
+            if (date === todayStr) {
+                setCurrentLessonIndex(index);
+            } else {
                 localStorage.setItem('dailyProgress', JSON.stringify({ date: todayStr, index: 0 }));
                 setCurrentLessonIndex(0);
             }
-        } else {
+        } catch (e) {
             localStorage.setItem('dailyProgress', JSON.stringify({ date: todayStr, index: 0 }));
+            setCurrentLessonIndex(0);
+        }
+    } else {
+        localStorage.setItem('dailyProgress', JSON.stringify({ date: todayStr, index: 0 }));
+    }
+
+    async function fetchProfileAndSetGreeting() {
+        setIsLoading(true);
+        try {
+            const profile = await getUserProfile({ userId });
+            setWelcomeName(profile?.displayName || 'Learner');
+            
+            const returnGreetings = [
+                "Welcome back", "Great to see you again", "Let's get learning",
+                "Ready for a new challenge?", "Time for another adventure",
+            ];
+            setGreeting(returnGreetings[Math.floor(Math.random() * returnGreetings.length)]);
+        } catch (error) {
+            console.error('Failed to fetch user profile', error);
+            toast({
+                title: 'Error',
+                description: 'Could not fetch user profile.',
+                variant: 'destructive'
+            })
+        } finally {
+            setIsLoading(false);
         }
     }
-  }, [isClient]);
+    
+    fetchProfileAndSetGreeting();
+
+  }, [toast]);
 
   const handleSkip = () => {
     const newIndex = currentLessonIndex + 1;
@@ -101,12 +116,20 @@ export function DashboardClient() {
       <main className="flex-1">
         <div className="container mx-auto px-4 py-8 md:py-12">
           <section className="text-center mb-10">
-            <h1 className="text-4xl font-bold font-headline tracking-tight sm:text-5xl capitalize">
-              {greeting}, {welcomeName}!
-            </h1>
-            <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
-              {allLessonsDone ? "You've completed your missions for today!" : "Here is your next lesson for today. Let's get started!"}
-            </p>
+            {isLoading ? (
+                <div className="flex items-center justify-center h-14">
+                    <Loader2 className="h-8 w-8 animate-spin" />
+                </div>
+            ) : (
+                <>
+                <h1 className="text-4xl font-bold font-headline tracking-tight sm:text-5xl capitalize">
+                    {greeting}, {welcomeName}!
+                </h1>
+                <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
+                    {allLessonsDone ? "You've completed your missions for today!" : "Here is your next lesson for today. Let's get started!"}
+                </p>
+                </>
+            )}
           </section>
 
           <section className="max-w-2xl mx-auto mb-10">
@@ -148,7 +171,7 @@ export function DashboardClient() {
                     </CardHeader>
                     <CardContent className="flex flex-col sm:flex-row gap-3">
                          <Button asChild size="lg" className="flex-1 bg-btn-gradient text-accent-foreground hover:opacity-90">
-                            <Link href="/curriculum">
+                            <Link href={`/subjects/${currentLesson.subject.id}/chat`}>
                                 Start Lesson
                                 <ArrowRight className="ml-2"/>
                             </Link>
@@ -192,7 +215,7 @@ export function DashboardClient() {
                       <Timetable />
                   </DialogContent>
               </Dialog>
-              {isClient && currentLessonIndex > 0 && (
+              {currentLessonIndex > 0 && (
                 <Button variant="ghost" onClick={handleResetProgress}>
                     <RefreshCw className="mr-2" />
                     Reset Today's Progress
