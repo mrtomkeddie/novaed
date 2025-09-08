@@ -17,15 +17,13 @@ function initializeFirebaseAdmin() {
     if (admin.apps.length > 0) {
         return admin.app();
     }
-    // Make sure to configure GOOGLE_APPLICATION_CREDENTIALS environment variable.
     try {
         return admin.initializeApp({
             credential: admin.credential.applicationDefault(),
             projectId: process.env.FIREBASE_PROJECT_ID,
         });
     } catch (e) {
-        console.error("Firebase Admin initialization error", e);
-        // Return null or handle error appropriately if initialization fails
+        console.error("Firebase Admin initialization error. Make sure GOOGLE_APPLICATION_CREDENTIALS are set.", e);
         return null;
     }
 }
@@ -49,7 +47,11 @@ const getUserProgressFlow = ai.defineFlow(
     outputSchema: ProgressOutputSchema,
   },
   async ({ userId, subjectId }) => {
-    initializeFirebaseAdmin();
+    const app = initializeFirebaseAdmin();
+    if (!app) {
+        console.error("Firebase not initialized, cannot get user progress.");
+        return null;
+    }
     const db = admin.firestore();
 
     const subject = subjects.find(s => s.id === subjectId);
@@ -76,7 +78,11 @@ const getAllUserProgressFlow = ai.defineFlow(
         outputSchema: z.array(ProgressOutputSchema),
     },
     async ({ userId }) => {
-        initializeFirebaseAdmin();
+        const app = initializeFirebaseAdmin();
+        if (!app) {
+            console.error("Firebase not initialized, cannot get all user progress.");
+            return [];
+        }
         const db = admin.firestore();
         
         const snapshot = await db.collection('users').doc(userId).collection('progress').get();
