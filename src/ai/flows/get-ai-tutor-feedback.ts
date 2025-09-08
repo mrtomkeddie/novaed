@@ -7,6 +7,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import { getUserProfile } from './user-profile';
 
 // Define the structure for a single message in the chat history.
 const ChatMessageSchema = z.object({
@@ -16,7 +17,7 @@ const ChatMessageSchema = z.object({
 
 // Define the input schema for the feedback flow.
 const GetAITutorFeedbackInputSchema = z.object({
-  tutorTheme: z.enum(['mario', 'sonic']),
+  userId: z.string(),
   topicTitle: z.string().describe('The specific topic title of the lesson.'),
   subject: z.string().describe('The subject the user is studying.'),
   chatHistory: z.array(ChatMessageSchema).describe('The conversation history so far.'),
@@ -24,7 +25,7 @@ const GetAITutorFeedbackInputSchema = z.object({
 
 // Define the output schema for the AI's feedback.
 const GetAITutorFeedbackOutputSchema = z.object({
-  feedback: z.string().describe("The AI tutor's next message to the user."),
+  feedback: z.string().describe('The AI tutor\'s next message to the user.'),
   multipleChoiceOptions: z.array(z.string()).nullable().describe('An optional list of multiple-choice answers for the user.'),
 });
 export type GetAITutorFeedbackOutput = z.infer<typeof GetAITutorFeedbackOutputSchema>;
@@ -38,10 +39,12 @@ const aiTutorFeedbackFlow = ai.defineFlow(
     outputSchema: GetAITutorFeedbackOutputSchema,
   },
   async (input) => {
-    const tutorTheme = input.tutorTheme || 'mario';
+    // Fetch the user's profile to get their preferred tutor theme.
+    const userProfile = await getUserProfile({ userId: input.userId });
+    const tutorTheme = userProfile?.tutorTheme || 'mario';
 
     const tutorInstruction = tutorTheme === 'mario' 
-      ? "You are Nova, an AI tutor with the personality of Mario from the Nintendo games. You are enthusiastic, encouraging, and use Mario-style phrases like 'Let's-a go!', 'Wahoo!', and 'Mamma mia!'. Keep your responses concise, fun, and focused on teaching the user."
+      ? "You are Nova, an AI tutor with the personality of Mario from the Nintendo games. You are enthusiastic, encouraging, and use Mario-style phrases like 'Let\'s-a go!', 'Wahoo!', and 'Mamma mia!'. Keep your responses concise, fun, and focused on teaching the user."
       : "You are Nova, an AI tutor with the personality of Sonic the Hedgehog. You are cool, quick-witted, and a bit impatient, always wanting to move 'gotta go fast!'. You use Sonic-style phrases and have a high-energy, confident attitude. Keep responses short and to the point.";
 
     const firstMessageRule = input.chatHistory.length <= 1 
@@ -70,7 +73,7 @@ const aiTutorFeedbackFlow = ai.defineFlow(
     
     const { output } = await ai.generate({
       prompt,
-      model: 'openai/gpt-4o',
+      model: 'openai/gpt-4-turbo',
       output: {
           schema: GetAITutorFeedbackOutputSchema,
       },

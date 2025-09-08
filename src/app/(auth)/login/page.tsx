@@ -1,8 +1,7 @@
 
 import { redirect } from 'next/navigation';
 
-// The login page is now the root page.
-// This page just redirects there to avoid duplicate content.
+// This page is no longer used since user authentication has been removed.
 export default function LoginPage() {
-  redirect('/');
+  redirect('/dashboard');
 }

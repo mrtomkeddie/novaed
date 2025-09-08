@@ -43,8 +43,8 @@ export function SubjectCard({ subject }: SubjectCardProps) {
       </CardContent>
       <CardFooter>
         <Button asChild className="w-full bg-btn-gradient text-accent-foreground hover:opacity-90">
-          <Link href={subject.href}>
-            Start Lesson
+          <Link href={'/curriculum'}>
+            View Curriculum
           </Link>
         </Button>
       </CardFooter>
