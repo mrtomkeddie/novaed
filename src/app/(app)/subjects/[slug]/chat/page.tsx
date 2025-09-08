@@ -34,9 +34,9 @@ type Message = {
 
 // Dummy user for demonstration purposes
 const dummyUser = {
-    uid: 'dummy-user-id',
-    displayName: 'Learner',
-    email: 'learner@novaed.app'
+    uid: 'charlie', // Hardcoded user ID for "Charlie"
+    displayName: 'Charlie',
+    email: 'charlie@novaed.app'
 };
 
 export default function ChatPage() {
@@ -58,21 +58,69 @@ export default function ChatPage() {
 
   useEffect(() => {
     if (subject) {
+      const determineCurrentTopicAndGreet = async () => {
         setIsLoading(true);
-        // Since we have no backend, we just start with the first lesson.
-        const topic = subject.lessons.find(l => !l.completed) || subject.lessons[0];
-        setCurrentTopic(topic);
-        
-        const initialMessage: Message = {
+        try {
+          const response = await fetch('/api/get-user-progress', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId: dummyUser.uid, subjectId: subject.id }),
+          });
+
+          if (!response.ok) {
+            throw new Error('Failed to fetch user progress');
+          }
+          
+          const lastProgress = await response.json();
+          let topic: Lesson | null = null;
+
+          if (lastProgress && lastProgress.topic_id) {
+            const lastTopicIndex = subject.lessons.findIndex(l => l.id === lastProgress.topic_id);
+            // If the last lesson is found and it's not the final lesson in the curriculum
+            if (lastTopicIndex > -1 && lastTopicIndex + 1 < subject.lessons.length) {
+              topic = subject.lessons[lastTopicIndex + 1];
+            } else {
+              // If all lessons are done, or something is out of sync, start from the first one.
+              topic = subject.lessons[0];
+            }
+          } else {
+            // No progress for this subject, start from the first lesson.
+            topic = subject.lessons[0];
+          }
+          
+          setCurrentTopic(topic);
+          
+          const initialMessage: Message = {
             role: 'assistant',
             content: `Hey ${dummyUser.displayName}! Ready to start our lesson on "${topic.title}"?`,
             multipleChoiceOptions: ["Let's Go!"],
-        };
-        
-        setMessages([initialMessage]);
-        setIsLoading(false);
+          };
+          
+          setMessages([initialMessage]);
+
+        } catch (error) {
+          console.error('Error determining topic:', error);
+          const topic = subject.lessons[0];
+          setCurrentTopic(topic);
+          const errorMessage: Message = {
+              role: 'assistant',
+              content: `Hey ${dummyUser.displayName}! Ready to start with "${topic.title}"?`,
+              multipleChoiceOptions: ["Let's Go!"]
+          };
+          setMessages([errorMessage]);
+          toast({
+            variant: 'destructive',
+            title: 'Could not load progress',
+            description: 'Starting from the first lesson. Your progress may not have loaded.',
+          });
+        } finally {
+          setIsLoading(false);
+        }
+      };
+
+      determineCurrentTopicAndGreet();
     }
-  }, [subject]);
+  }, [subject, toast]);
 
   useEffect(() => {
     const viewport = scrollAreaRef.current?.querySelector('div[data-radix-scroll-area-viewport]');
@@ -89,10 +137,7 @@ export default function ChatPage() {
     const userMessage: Message = { role: 'user', content };
     let currentMessages = messages;
     
-    // On first interaction, we don't want to show the "Let's Go!" message from the user.
-    // We just want to start the lesson.
     if (isFirstInteraction) {
-      // The AI expects at least one message to start. 'start' is a neutral signal.
       currentMessages = [{ role: 'user', content: 'start' }];
     } else {
       currentMessages = [...messages, userMessage];
@@ -125,8 +170,6 @@ export default function ChatPage() {
       }
 
       const result = await response.json();
-      
-      // Use the original messages state for the first interaction to avoid showing "start"
       const finalMessages = isFirstInteraction ? messages : currentMessages;
 
       setMessages([
@@ -147,8 +190,7 @@ export default function ChatPage() {
         title: 'An AI Error Occurred',
         description: error.message || 'There was a problem getting a response from Nova. Please try again.',
       });
-       // Restore previous message state on error
-      setMessages(messages);
+      setMessages(messages); // Restore previous state
     } finally {
       setIsNovaTyping(false);
     }
@@ -168,23 +210,57 @@ export default function ChatPage() {
     }));
 
     try {
-      // Since there's no backend to save to, we just simulate the end.
-      // In a real app, this is where you'd call APIs to log progress.
-      await new Promise(resolve => setTimeout(resolve, 1500));
-
-      toast({
-        title: 'Lesson Ended! 🎉',
-        description: 'Your progress would be saved in a real application.',
+      const summaryResponse = await fetch('/api/generate-lesson-summary', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          subject: subject.name,
+          topicTitle: currentTopic.title,
+          topicId: currentTopic.id,
+          chatHistory: simplifiedHistory,
+        }),
       });
-      
-      router.push('/dashboard');
 
+      if (!summaryResponse.ok) {
+        throw new Error('Failed to generate lesson summary');
+      }
+
+      const summary = await summaryResponse.json();
+      
+      const logResponse = await fetch('/api/log-progress', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: dummyUser.uid, summary }),
+      });
+
+      if (!logResponse.ok) {
+        throw new Error('Failed to log progress');
+      }
+
+      const { success, error } = await logResponse.json();
+
+      if (success) {
+        toast({
+          title: 'Progress Saved! 🎉',
+          description: 'Your lesson summary has been logged successfully.',
+        });
+        
+        router.push('/dashboard');
+      } else {
+        toast({
+          variant: 'destructive',
+          title: 'Error Saving Progress',
+          description: error || 'Your progress could not be saved.',
+          duration: 8000,
+        });
+        router.push('/dashboard');
+      }
     } catch (error: any) {
       console.error('Error ending lesson:', error);
       toast({
         variant: 'destructive',
         title: 'Error Ending Lesson',
-        description: error.message || 'Could not end the lesson.',
+        description: error.message || 'Could not save your progress. Please try again.',
       });
     } finally {
       setIsLogging(false);
@@ -240,7 +316,7 @@ export default function ChatPage() {
                     <AlertDialogHeader>
                     <AlertDialogTitle>Are you sure you want to end the lesson?</AlertDialogTitle>
                     <AlertDialogDescription>
-                        This will end the current session and return you to the dashboard.
+                        This will save your progress and return you to the dashboard.
                     </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
