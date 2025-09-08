@@ -4,9 +4,10 @@
  * @fileOverview Provides AI-driven feedback for a tutoring session.
  * - getAITutorFeedback: Generates a response from the AI tutor based on the chat history.
  */
-
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import fs from 'fs';
+import path from 'path';
 
 // Define the structure for a single message in the chat history.
 const ChatMessageSchema = z.object({
@@ -24,7 +25,7 @@ const GetAITutorFeedbackInputSchema = z.object({
 
 // Define the output schema for the AI's feedback.
 const GetAITutorFeedbackOutputSchema = z.object({
-  feedback: z.string().describe('The AI tutor\'s next message to the user.'),
+  feedback: z.string().describe("The AI tutor's next message to the user."),
   multipleChoiceOptions: z.array(z.string()).nullable().describe('An optional list of multiple-choice answers for the user.'),
 });
 export type GetAITutorFeedbackOutput = z.infer<typeof GetAITutorFeedbackOutputSchema>;
@@ -38,26 +39,31 @@ const aiTutorFeedbackFlow = ai.defineFlow(
     outputSchema: GetAITutorFeedbackOutputSchema,
   },
   async (input) => {
-    // The tutor personality is now hardcoded to Mario.
-    const tutorInstruction = "You are Nova, an AI tutor with the personality of Mario from the Nintendo games. You are enthusiastic, encouraging, and use Mario-style phrases like 'Let\\'s-a go!', 'Wahoo!', and 'Mamma mia!'. Keep your responses concise, fun, and focused on teaching the user.";
+
+    // Read the master prompt from the markdown file.
+    const promptFilePath = path.join(process.cwd(), 'prompt.md');
+    const masterPrompt = fs.readFileSync(promptFilePath, 'utf-8');
 
     const firstMessageRule = input.chatHistory.length <= 1 
       ? `This is the very first message. Start with a greeting and a simple, encouraging question to begin the lesson on "${input.topicTitle}". Provide only one multiple choice option: "Let's Go!".`
       : `This is a continuing conversation. Your response should be based on the user's last message.`;
-
+    
+    // The prompt now combines the master instructions with dynamic data.
     const prompt = `
-      ${tutorInstruction} Your goal is to teach the user about "${input.topicTitle}" in the subject "${input.subject}".
+      ${masterPrompt}
 
-      Rules:
-      1.  Keep your responses under 60 words.
-      2.  Ask one question at a time.
-      3.  End every response with a question to the user.
-      4.  If the user's answer is a single word or a short phrase, provide 2-4 multiple-choice options for your next question.
-      5.  If the user provides a detailed answer, ask an open-ended follow-up question and set multipleChoiceOptions to null.
-      6.  If the user asks a question, answer it simply and then ask a question to get back on topic.
-      7.  ${firstMessageRule}
+      Your current goal is to teach the user about "${input.topicTitle}" in the subject "${input.subject}".
 
-      Analyze the chat history and provide the next message.
+      Rules for this specific interaction:
+      1. Keep your responses under 60 words.
+      2. Ask one question at a time.
+      3. Always end your response with a question to the user.
+      4. If the user's answer is a single word or a short phrase, provide 2-4 multiple-choice options for your next question.
+      5. If the user provides a detailed answer, ask an open-ended follow-up question and set multipleChoiceOptions to null.
+      6. If the user asks a question, answer it simply and then ask a question to get back on topic.
+      7. ${firstMessageRule}
+
+      Analyze the chat history and provide the next message based on all the instructions above.
 
       Chat History:
       {{#each chatHistory}}
