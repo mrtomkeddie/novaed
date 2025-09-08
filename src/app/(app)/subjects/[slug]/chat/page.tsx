@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
@@ -29,7 +28,15 @@ import {
 type Message = {
   role: 'user' | 'assistant';
   content: string;
+  feedback?: string;
   multipleChoiceOptions?: string[] | null;
+};
+
+// Dummy user for demonstration purposes
+const dummyUser = {
+    uid: 'dummy-user-id',
+    displayName: 'Learner',
+    email: 'learner@novaed.app'
 };
 
 export default function ChatPage() {
@@ -46,29 +53,26 @@ export default function ChatPage() {
   const [isLogging, setIsLogging] = useState(false);
   const [currentTopic, setCurrentTopic] = useState<Lesson | null>(null);
   const [isCalcOpen, setIsCalcOpen] = useState(false);
-  const [tutorTheme, setTutorTheme] = useState('mario');
 
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
-    useEffect(() => {
-        const savedTheme = localStorage.getItem('tutorTheme') || 'mario';
-        setTutorTheme(savedTheme);
-
-        if (subject) {
-            setIsLoading(true);
-            const topic = subject.lessons[0];
-            setCurrentTopic(topic);
-            
-            const initialMessage: Message = {
-                role: 'assistant',
-                content: `Hey! Ready to start our lesson on "${topic.title}"?`,
-                multipleChoiceOptions: ["Let's Go!"],
-            };
-            
-            setMessages([initialMessage]);
-            setIsLoading(false);
-        }
-    }, [subject]);
+  useEffect(() => {
+    if (subject) {
+        setIsLoading(true);
+        // Since we have no backend, we just start with the first lesson.
+        const topic = subject.lessons.find(l => !l.completed) || subject.lessons[0];
+        setCurrentTopic(topic);
+        
+        const initialMessage: Message = {
+            role: 'assistant',
+            content: `Hey ${dummyUser.displayName}! Ready to start our lesson on "${topic.title}"?`,
+            multipleChoiceOptions: ["Let's Go!"],
+        };
+        
+        setMessages([initialMessage]);
+        setIsLoading(false);
+    }
+  }, [subject]);
 
   useEffect(() => {
     const viewport = scrollAreaRef.current?.querySelector('div[data-radix-scroll-area-viewport]');
@@ -78,17 +82,18 @@ export default function ChatPage() {
   }, [messages, isNovaTyping]);
 
   const sendUserMessageAndGetFeedback = async (content: string) => {
-    if ((!content.trim()) || isNovaTyping || isLogging || !subject || !currentTopic) return;
-  
-    const isFirstInteraction = messages.length === 1 && content === "Let's Go!";
+    if (isNovaTyping || isLogging || !subject || !currentTopic) return;
+
+    const isFirstInteraction = messages.length === 1 && (content === "Let's Go!");
     
     const userMessage: Message = { role: 'user', content };
     let currentMessages = messages;
     
-    // For the first interaction, we create a clean history to send to the AI
-    // to avoid the double-greeting bug.
+    // On first interaction, we don't want to show the "Let's Go!" message from the user.
+    // We just want to start the lesson.
     if (isFirstInteraction) {
-      currentMessages = [...messages, userMessage];
+      // The AI expects at least one message to start. 'start' is a neutral signal.
+      currentMessages = [{ role: 'user', content: 'start' }];
     } else {
       currentMessages = [...messages, userMessage];
       setMessages(currentMessages);
@@ -96,37 +101,40 @@ export default function ChatPage() {
     
     setIsNovaTyping(true);
     setInput('');
-  
+
     const simplifiedHistory = currentMessages.map(m => ({
         role: m.role,
-        content: m.content,
+        content: m.feedback || m.content,
     }));
-  
+
     try {
       const response = await fetch('/api/get-ai-tutor-feedback', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          tutorTheme,
+          userId: dummyUser.uid,
           topicTitle: currentTopic.title,
           chatHistory: simplifiedHistory,
           subject: subject.name,
         }),
       });
-  
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Failed to get AI feedback');
       }
-  
+
       const result = await response.json();
       
-      // We now add the response to our *original* messages array.
+      // Use the original messages state for the first interaction to avoid showing "start"
+      const finalMessages = isFirstInteraction ? messages : currentMessages;
+
       setMessages([
-        ...currentMessages,
+        ...finalMessages,
         {
           role: 'assistant',
           content: result.feedback,
+          feedback: result.feedback,
           multipleChoiceOptions: result.multipleChoiceOptions,
         },
       ]);
@@ -139,7 +147,8 @@ export default function ChatPage() {
         title: 'An AI Error Occurred',
         description: error.message || 'There was a problem getting a response from Nova. Please try again.',
       });
-       setMessages([...currentMessages, { role: 'assistant', content: "Sorry, I ran into a problem. Please try sending your message again."}])
+       // Restore previous message state on error
+      setMessages(messages);
     } finally {
       setIsNovaTyping(false);
     }
@@ -155,33 +164,19 @@ export default function ChatPage() {
 
     const simplifiedHistory = messages.map(m => ({
         role: m.role,
-        content: m.content,
+        content: m.feedback || m.content,
     }));
 
     try {
-      const summaryResponse = await fetch('/api/generate-lesson-summary', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          subject: subject.name,
-          topicTitle: currentTopic.title,
-          topicId: currentTopic.id,
-          chatHistory: simplifiedHistory,
-        }),
-      });
+      // Since there's no backend to save to, we just simulate the end.
+      // In a real app, this is where you'd call APIs to log progress.
+      await new Promise(resolve => setTimeout(resolve, 1500));
 
-      if (!summaryResponse.ok) {
-        throw new Error('Failed to generate lesson summary');
-      }
-
-      const summary = await summaryResponse.json();
-      
       toast({
-          title: 'Lesson Summary',
-          description: <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4"><code className="text-white">{JSON.stringify(summary, null, 2)}</code></pre>,
-          duration: 15000,
-        });
-
+        title: 'Lesson Ended! 🎉',
+        description: 'Your progress would be saved in a real application.',
+      });
+      
       router.push('/dashboard');
 
     } catch (error: any) {
@@ -189,7 +184,7 @@ export default function ChatPage() {
       toast({
         variant: 'destructive',
         title: 'Error Ending Lesson',
-        description: error.message || 'Could not save your progress. Please try again.',
+        description: error.message || 'Could not end the lesson.',
       });
     } finally {
       setIsLogging(false);
@@ -245,7 +240,7 @@ export default function ChatPage() {
                     <AlertDialogHeader>
                     <AlertDialogTitle>Are you sure you want to end the lesson?</AlertDialogTitle>
                     <AlertDialogDescription>
-                        This will save your progress and return you to the dashboard.
+                        This will end the current session and return you to the dashboard.
                     </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
@@ -284,7 +279,7 @@ export default function ChatPage() {
                         : 'bg-card'
                     )}
                   >
-                    <p className="text-base whitespace-pre-wrap">{message.content}</p>
+                    <p className="text-base whitespace-pre-wrap">{message.feedback || message.content}</p>
                     
                     {message.role === 'assistant' &&
                       message.multipleChoiceOptions &&
@@ -307,7 +302,7 @@ export default function ChatPage() {
                   </div>
                   {message.role === 'user' && (
                     <Avatar className="w-8 h-8">
-                       <AvatarFallback>
+                      <AvatarFallback>
                         <User className="w-5 h-5"/>
                       </AvatarFallback>
                     </Avatar>

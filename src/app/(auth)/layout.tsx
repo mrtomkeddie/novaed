@@ -1,9 +1,7 @@
 
-// This layout is no longer used and can be safely deleted.
-export default function AuthLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
-  return <>{children}</>;
+import { redirect } from 'next/navigation';
+
+// This layout is no longer used since user authentication has been removed.
+export default function AuthLayout() {
+  redirect('/');
 }
