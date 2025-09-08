@@ -54,74 +54,67 @@ export default function ChatPage() {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
 
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const isInitialLoad = useRef(true);
 
   useEffect(() => {
-    if (subject) {
-      const determineCurrentTopicAndGreet = async () => {
-        setIsLoading(true);
-        try {
-          const profile = await getUserProfile({ userId });
-          setUserProfile(profile);
-          
-          const response = await fetch('/api/get-user-progress', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userId, subjectId: subject.id }),
-          });
+    if (subject && isInitialLoad.current) {
+        isInitialLoad.current = false; // Prevent this from running on re-renders
+        const startLesson = async () => {
+            setIsLoading(true);
+            try {
+                const profile = await getUserProfile({ userId });
+                setUserProfile(profile);
 
-          if (!response.ok) {
-            throw new Error('Failed to fetch user progress');
-          }
-          
-          const lastProgress = await response.json();
-          let topic: Lesson | null = null;
+                const response = await fetch('/api/get-user-progress', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId, subjectId: subject.id }),
+                });
 
-          if (lastProgress && lastProgress.topic_id) {
-            const lastTopicIndex = subject.lessons.findIndex(l => l.id === lastProgress.topic_id);
-            if (lastTopicIndex > -1 && lastTopicIndex + 1 < subject.lessons.length) {
-              topic = subject.lessons[lastTopicIndex + 1];
-            } else {
-              topic = subject.lessons[0];
+                if (!response.ok) {
+                    throw new Error('Failed to fetch user progress');
+                }
+
+                const lastProgress = await response.json();
+                let topic: Lesson | null = null;
+
+                if (lastProgress && lastProgress.topic_id) {
+                    const lastTopicIndex = subject.lessons.findIndex(l => l.id === lastProgress.topic_id);
+                    if (lastTopicIndex > -1 && lastTopicIndex + 1 < subject.lessons.length) {
+                        topic = subject.lessons[lastTopicIndex + 1];
+                    } else {
+                        topic = subject.lessons[0];
+                    }
+                } else {
+                    topic = subject.lessons[0];
+                }
+                
+                setCurrentTopic(topic);
+                // Immediately get the first message from the tutor
+                await sendUserMessageAndGetFeedback('start', topic);
+
+            } catch (error) {
+                console.error('Error starting lesson:', error);
+                const topic = subject.lessons[0];
+                setCurrentTopic(topic);
+                const errorMessage: Message = {
+                    role: 'assistant',
+                    content: `I had a little trouble loading our lesson plan. Shall we start with "${topic.title}"?`,
+                    multipleChoiceOptions: ["Let's Go!"]
+                };
+                setMessages([errorMessage]);
+                toast({
+                    variant: 'destructive',
+                    title: 'Could not load progress',
+                    description: 'Starting from the first lesson. Your progress may not have loaded.',
+                });
+            } finally {
+                setIsLoading(false);
             }
-          } else {
-            topic = subject.lessons[0];
-          }
-          
-          setCurrentTopic(topic);
-          const welcomeName = profile?.displayName || 'Learner';
-          
-          const initialMessage: Message = {
-            role: 'assistant',
-            content: `Hey ${welcomeName}! Ready to start our lesson on "${topic.title}"?`,
-            multipleChoiceOptions: ["Let's Go!"],
-          };
-          
-          setMessages([initialMessage]);
-
-        } catch (error) {
-          console.error('Error determining topic:', error);
-          const topic = subject.lessons[0];
-          setCurrentTopic(topic);
-          const welcomeName = userProfile?.displayName || 'Learner';
-          const errorMessage: Message = {
-              role: 'assistant',
-              content: `Hey ${welcomeName}! Ready to start with "${topic.title}"?`,
-              multipleChoiceOptions: ["Let's Go!"]
-          };
-          setMessages([errorMessage]);
-          toast({
-            variant: 'destructive',
-            title: 'Could not load progress',
-            description: 'Starting from the first lesson. Your progress may not have loaded.',
-          });
-        } finally {
-          setIsLoading(false);
-        }
-      };
-
-      determineCurrentTopicAndGreet();
+        };
+        startLesson();
     }
-  }, [subject, toast, userProfile?.displayName]);
+  }, [subject, toast]);
 
   useEffect(() => {
     const viewport = scrollAreaRef.current?.querySelector('div[data-radix-scroll-area-viewport]');
@@ -130,10 +123,11 @@ export default function ChatPage() {
     }
   }, [messages, isNovaTyping]);
 
-  const sendUserMessageAndGetFeedback = async (content: string) => {
-    if (isNovaTyping || isLogging || !subject || !currentTopic) return;
+  const sendUserMessageAndGetFeedback = async (content: string, topicOverride?: Lesson | null) => {
+    const topicToUse = topicOverride || currentTopic;
+    if (isNovaTyping || isLogging || !subject || !topicToUse) return;
   
-    const isFirstInteraction = messages.length === 1 && content === "Let's Go!";
+    const isFirstInteraction = content === 'start';
     let currentMessages = messages;
   
     if (!isFirstInteraction) {
@@ -158,7 +152,7 @@ export default function ChatPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           userId: userId,
-          topicTitle: currentTopic.title,
+          topicTitle: topicToUse.title,
           chatHistory: chatHistoryForApi,
           subject: subject.name,
         }),
