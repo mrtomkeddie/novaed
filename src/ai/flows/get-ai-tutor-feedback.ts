@@ -40,25 +40,30 @@ const aiTutorFeedbackFlow = ai.defineFlow(
   },
   async (input) => {
 
+    // If this is the very first message of the lesson, bypass the AI
+    // and return a hardcoded greeting to ensure a smooth start.
+    if (input.chatHistory.length === 1 && input.chatHistory[0].content === 'start') {
+        return {
+            feedback: `Mamma mia, it's-a time for ${input.subject}! Let's start our adventure into "${input.topicTitle}". I'm-a so excited! What's the first thing that comes to mind when you hear that topic?`,
+            multipleChoiceOptions: null,
+        };
+    }
+
     // Read the master prompt from the markdown file.
     const promptFilePath = path.join(process.cwd(), 'prompt.md');
     const masterPrompt = fs.readFileSync(promptFilePath, 'utf-8');
-
-    const firstMessageRule = input.chatHistory.length <= 1 
-      ? `This is the very first message. Start with a greeting and a simple, encouraging question to begin the lesson on "${input.topicTitle}".`
-      : `This is a continuing conversation. Your response should be based on the user's last message.`;
     
     // The prompt now combines the master instructions with dynamic data.
     const prompt = `
       ${masterPrompt}
 
-      You are an AI assistant that provides tutoring feedback. Your goal is to teach the user about "${input.topicTitle}" in the subject "${input.subject}".
+      Your goal is to teach the user about "${input.topicTitle}" in the subject "${input.subject}".
 
       Rules for this specific interaction:
       1.  Keep your responses under 60 words.
       2.  Ask one question at a time.
       3.  Always end your response with a question to the user.
-      4.  ${firstMessageRule}
+      4.  This is a continuing conversation. Your response should be based on the user's last message.
       5.  Provide your response in a JSON format with two fields: 'feedback' (your message to the user) and 'multipleChoiceOptions' (an array of strings for the user to choose from, or null if it's an open question).
       6.  If the user's answer is a single word or short phrase, provide 2-4 multiple-choice options.
       7.  If the user gives a detailed answer, ask an open-ended follow-up question and set 'multipleChoiceOptions' to null.
