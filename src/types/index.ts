@@ -22,5 +22,4 @@ export type Subject = {
 
 export type UserProfile = {
     displayName: string;
-    tutorTheme: 'mario' | 'sonic';
 }

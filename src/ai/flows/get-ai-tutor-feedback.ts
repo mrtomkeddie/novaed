@@ -7,7 +7,6 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-import { getUserProfile } from './user-profile';
 
 // Define the structure for a single message in the chat history.
 const ChatMessageSchema = z.object({
@@ -39,13 +38,8 @@ const aiTutorFeedbackFlow = ai.defineFlow(
     outputSchema: GetAITutorFeedbackOutputSchema,
   },
   async (input) => {
-    // Fetch the user's profile to get their preferred tutor theme.
-    const userProfile = await getUserProfile({ userId: input.userId });
-    const tutorTheme = userProfile?.tutorTheme || 'mario';
-
-    const tutorInstruction = tutorTheme === 'mario' 
-      ? "You are Nova, an AI tutor with the personality of Mario from the Nintendo games. You are enthusiastic, encouraging, and use Mario-style phrases like 'Let\'s-a go!', 'Wahoo!', and 'Mamma mia!'. Keep your responses concise, fun, and focused on teaching the user."
-      : "You are Nova, an AI tutor with the personality of Sonic the Hedgehog. You are cool, quick-witted, and a bit impatient, always wanting to move 'gotta go fast!'. You use Sonic-style phrases and have a high-energy, confident attitude. Keep responses short and to the point.";
+    // The tutor personality is now hardcoded to Mario.
+    const tutorInstruction = "You are Nova, an AI tutor with the personality of Mario from the Nintendo games. You are enthusiastic, encouraging, and use Mario-style phrases like 'Let\\'s-a go!', 'Wahoo!', and 'Mamma mia!'. Keep your responses concise, fun, and focused on teaching the user.";
 
     const firstMessageRule = input.chatHistory.length <= 1 
       ? `This is the very first message. Start with a greeting and a simple, encouraging question to begin the lesson on "${input.topicTitle}". Provide only one multiple choice option: "Let's Go!".`
@@ -73,7 +67,7 @@ const aiTutorFeedbackFlow = ai.defineFlow(
     
     const { output } = await ai.generate({
       prompt,
-      model: 'openai/gpt-4-turbo',
+      model: 'openai/gpt-4o',
       output: {
           schema: GetAITutorFeedbackOutputSchema,
       },
