@@ -18,7 +18,7 @@ function initializeFirebaseAdmin() {
     }
     return admin.initializeApp({
         credential: admin.credential.applicationDefault(),
-        projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+        projectId: process.env.FIREBASE_PROJECT_ID,
     });
 }
 
@@ -47,7 +47,10 @@ const getUserProfileFlow = ai.defineFlow(
 
     const doc = await db.collection('users').doc(userId).get();
     if (!doc.exists) {
-        return null;
+        // If profile doesn't exist, create a default one for "Charlie"
+        const defaultProfile = { displayName: 'Charlie' };
+        await db.collection('users').doc(userId).set(defaultProfile);
+        return defaultProfile;
     }
     return doc.data() as UserProfile;
   }
@@ -70,10 +73,12 @@ const saveUserProfileFlow = ai.defineFlow(
     }
 );
 
-export async function getUserProfile(input: z.infer<typeof GetUserProfileInputSchema>): Promise<UserProfile | null> {
+export async function getUserProfile(input: z.infer<typeof GetUserProgressInputSchema>): Promise<UserProfile | null> {
     return getUserProfileFlow(input);
 }
 
 export async function saveUserProfile(input: z.infer<typeof SaveUserProfileInputSchema>): Promise<void> {
     return saveUserProfileFlow(input);
 }
+
+export type GetUserProgressInputSchema = z.infer<typeof GetUserProfileInputSchema>

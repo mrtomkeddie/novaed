@@ -19,39 +19,48 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 
-// Dummy progress data since we removed user-specific data fetching.
-const dummyProgressData: GenerateLessonSummaryOutput[] = [
-    {
-        subject: 'Maths (Core)',
-        topic_title: 'Number Sense',
-        topic_id: 'mc-1-1',
-        tutor_summary: 'Student showed great understanding of place value!',
-        mastery_status: 'Yes',
-        xp_earned: 100,
-        learning_style_used: 'Interactive',
-        date: new Date().toISOString(),
-    },
-    {
-        subject: 'Physics',
-        topic_title: 'Forces and Effects',
-        topic_id: 'phy-1-1',
-        tutor_summary: 'Needed a bit of help with unbalanced forces.',
-        mastery_status: 'No',
-        xp_earned: 25,
-        learning_style_used: 'Problem-Solving',
-        date: new Date(Date.now() - 86400000).toISOString(), // Yesterday
-    }
-];
+const userId = 'charlie'; // Hardcoded user ID for "Charlie"
 
-export function ProgressClient({ initialProgress }: { initialProgress: GenerateLessonSummaryOutput[] }) {
-  const [progressData] = useState<GenerateLessonSummaryOutput[]>(dummyProgressData);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error] = useState<string | null>(null);
+export function ProgressClient() {
+  const [progressData, setProgressData] = useState<GenerateLessonSummaryOutput[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [selectedSubject, setSelectedSubject] = useState<string>('all');
   const [availableSubjects, setAvailableSubjects] = useState<string[]>([]);
 
   useEffect(() => {
-    if(progressData.length > 0) {
+    async function fetchProgress() {
+        setIsLoading(true);
+        setError(null);
+        try {
+            const response = await fetch('/api/get-all-user-progress', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId }),
+            });
+            if (!response.ok) {
+                throw new Error('Failed to fetch progress data.');
+            }
+            const data = await response.json();
+            // Sort data by date descending
+            const sortedData = data.sort((a: any, b: any) => {
+                const dateA = a.date.seconds ? new Date(a.date.seconds * 1000) : new Date(a.date);
+                const dateB = b.date.seconds ? new Date(b.date.seconds * 1000) : new Date(b.date);
+                return dateB.getTime() - dateA.getTime();
+            });
+            setProgressData(sortedData);
+        } catch (err: any) {
+            setError(err.message || 'An unknown error occurred.');
+            console.error(err);
+        } finally {
+            setIsLoading(false);
+        }
+    }
+    fetchProgress();
+  }, []);
+
+  useEffect(() => {
+    if (progressData.length > 0) {
         const uniqueSubjects = [...new Set(progressData.map(p => p.subject))];
         setAvailableSubjects(uniqueSubjects.sort());
     }
@@ -62,6 +71,13 @@ export function ProgressClient({ initialProgress }: { initialProgress: GenerateL
   const filteredProgressData = progressData.filter(summary =>
     selectedSubject === 'all' || summary.subject === selectedSubject
   );
+
+  const getFormattedDate = (date: any) => {
+    if (date.seconds) {
+      return new Date(date.seconds * 1000).toLocaleDateString();
+    }
+    return new Date(date).toLocaleDateString();
+  };
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -156,7 +172,7 @@ export function ProgressClient({ initialProgress }: { initialProgress: GenerateL
                           </p>
                           <Separator />
                           <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-                              <div className="flex items-center gap-2"><Calendar className="w-4 h-4 text-muted-foreground" /> <span>{new Date(summary.date).toLocaleDateString()}</span></div>
+                              <div className="flex items-center gap-2"><Calendar className="w-4 h-4 text-muted-foreground" /> <span>{getFormattedDate(summary.date)}</span></div>
                               <div className="flex items-center gap-2"><Award className="w-4 h-4 text-muted-foreground" /> <span>{summary.xp_earned} XP</span></div>
                               <div className="flex items-center gap-2"><BookOpen className="w-4 h-4 text-muted-foreground" /> <span>{summary.learning_style_used} Style</span></div>
                               <div className="flex items-center gap-2"><BrainCircuit className="w-4 h-4 text-muted-foreground" /> <span>Responded Well</span></div>
@@ -165,7 +181,7 @@ export function ProgressClient({ initialProgress }: { initialProgress: GenerateL
                       {summary.mastery_status === 'No' && subjectId && (
                           <CardFooter>
                               <Button variant="secondary" className="w-full" asChild>
-                                  <Link href={`/curriculum`}>
+                                  <Link href={`/subjects/${subjectId}/chat`}>
                                       Review Lesson
                                   </Link>
                               </Button>

@@ -17,9 +17,10 @@ function initializeFirebaseAdmin() {
     if (admin.apps.length > 0) {
         return admin.app();
     }
+    // Make sure to configure GOOGLE_APPLICATION_CREDENTIALS environment variable.
     return admin.initializeApp({
         credential: admin.credential.applicationDefault(),
-        projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+        projectId: process.env.FIREBASE_PROJECT_ID,
     });
 }
 
