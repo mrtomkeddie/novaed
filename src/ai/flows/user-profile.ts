@@ -22,7 +22,7 @@ function initializeFirebaseAdmin() {
             projectId: process.env.FIREBASE_PROJECT_ID,
         });
     } catch (e) {
-        console.error("Firebase Admin initialization error", e);
+        console.error("Firebase Admin initialization error. Make sure GOOGLE_APPLICATION_CREDENTIALS are set.", e);
         return null;
     }
 }
@@ -47,7 +47,12 @@ const getUserProfileFlow = ai.defineFlow(
     outputSchema: UserProfileSchema.nullable(),
   },
   async ({ userId }) => {
-    initializeFirebaseAdmin();
+    const app = initializeFirebaseAdmin();
+    if (!app) {
+        console.error("Firebase not initialized, cannot get user profile.");
+        // Return a default profile to avoid breaking the UI
+        return { displayName: 'Charlie' };
+    }
     const db = admin.firestore();
 
     const doc = await db.collection('users').doc(userId).get();
@@ -68,7 +73,11 @@ const saveUserProfileFlow = ai.defineFlow(
         outputSchema: z.void(),
     },
     async ({ userId, profileData }) => {
-        initializeFirebaseAdmin();
+        const app = initializeFirebaseAdmin();
+        if (!app) {
+            console.error("Firebase not initialized, cannot save user profile.");
+            return;
+        }
         const db = admin.firestore();
 
         await db.collection('users').doc(userId).set({

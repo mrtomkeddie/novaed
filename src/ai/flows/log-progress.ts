@@ -20,7 +20,7 @@ function initializeFirebaseAdmin() {
             projectId: process.env.FIREBASE_PROJECT_ID,
         });
     } catch (e) {
-        console.error("Firebase Admin initialization error", e);
+        console.error("Firebase Admin initialization error. Make sure GOOGLE_APPLICATION_CREDENTIALS are set.", e);
         return null;
     }
 }
@@ -42,8 +42,14 @@ const logProgressFlow = ai.defineFlow(
     outputSchema: LogProgressOutputSchema,
   },
   async ({ userId, summary }) => {
+    const app = initializeFirebaseAdmin();
+    if (!app) {
+      const errorMsg = "Firebase not initialized, cannot log progress.";
+      console.error(errorMsg);
+      return { success: false, error: errorMsg };
+    }
+    
     try {
-      initializeFirebaseAdmin();
       const db = admin.firestore();
       
       const progressRef = db.collection('users').doc(userId).collection('progress').doc();
