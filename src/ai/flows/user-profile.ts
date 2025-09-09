@@ -87,12 +87,10 @@ const saveUserProfileFlow = ai.defineFlow(
     }
 );
 
-export async function getUserProfile(input: z.infer<typeof GetUserProgressInputSchema>): Promise<UserProfile | null> {
+export async function getUserProfile(input: z.infer<typeof GetUserProfileInputSchema>): Promise<UserProfile | null> {
     return getUserProfileFlow(input);
 }
 
 export async function saveUserProfile(input: z.infer<typeof SaveUserProfileInputSchema>): Promise<void> {
     return saveUserProfileFlow(input);
 }
-
-export type GetUserProgressInputSchema = z.infer<typeof GetUserProfileInputSchema>
