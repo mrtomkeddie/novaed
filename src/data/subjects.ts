@@ -19,7 +19,7 @@ export const subjects: Subject[] = [
     icon: Calculator,
     href: '/subjects/maths-applied/chat',
     lessons: [
-      { id: 'ma-1-1', title: 'Money Maths: UK coins and notes, giving change; Budgeting for small purchases', completed: false },
+      { id: 'ma-1-1', title: 'Money Maths', completed: false },
       { id: 'ma-1-2', title: 'Practical Time Problems: Bus/train schedules, elapsed time', completed: false },
       { id: 'ma-1-3', title: 'Logic Puzzles & Strategy: Sudoku, number riddles, chess-style logic', completed: false },
       { id: 'ma-1-4', title: 'Measurement in Real Life: Height, weight, temperature, basic conversions', completed: false },
