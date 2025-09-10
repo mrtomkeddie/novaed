@@ -34,6 +34,7 @@ type Message = {
 
 // Hardcoded user for "Charlie"
 const userId = 'charlie';
+const userProfile: UserProfile = { displayName: 'Charlie' };
 
 export default function ChatPage() {
   const params = useParams();
@@ -49,7 +50,6 @@ export default function ChatPage() {
   const [isLogging, setIsLogging] = useState(false);
   const [currentTopic, setCurrentTopic] = useState<Lesson | null>(null);
   const [isCalcOpen, setIsCalcOpen] = useState(false);
-  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
 
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const isInitialLoad = useRef(true);
@@ -60,19 +60,6 @@ export default function ChatPage() {
         const startLesson = async () => {
             setIsLoading(true);
             try {
-                const profileResponse = await fetch('/api/get-user-profile', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ userId }),
-                });
-
-                if (profileResponse.ok) {
-                    const profile = await profileResponse.json();
-                    setUserProfile(profile);
-                } else {
-                    console.warn('Could not fetch user profile for chat.');
-                }
-                
                 const response = await fetch('/api/get-user-progress', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -108,7 +95,6 @@ export default function ChatPage() {
                 const errorMessage: Message = {
                     role: 'assistant',
                     content: `I had a little trouble loading our lesson plan. Shall we start with "${topic.title}"?`,
-                    multipleChoiceOptions: ["Let's Go!"]
                 };
                 setMessages([errorMessage]);
                 toast({
