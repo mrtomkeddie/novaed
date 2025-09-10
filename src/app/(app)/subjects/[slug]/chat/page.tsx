@@ -59,6 +59,7 @@ export default function ChatPage() {
         isInitialLoad.current = false; // Prevent this from running on re-renders
         const startLesson = async () => {
             setIsLoading(true);
+            let topic: Lesson | null = null;
             try {
                 const response = await fetch('/api/get-user-progress', {
                     method: 'POST',
@@ -66,42 +67,37 @@ export default function ChatPage() {
                     body: JSON.stringify({ userId, subjectId: subject.id }),
                 });
 
-                if (!response.ok) {
-                    throw new Error('Failed to fetch user progress');
-                }
-
-                const lastProgress = await response.json();
-                let topic: Lesson | null = null;
-
-                if (lastProgress && lastProgress.topic_id) {
-                    const lastTopicIndex = subject.lessons.findIndex(l => l.id === lastProgress.topic_id);
-                    if (lastTopicIndex > -1 && lastTopicIndex + 1 < subject.lessons.length) {
-                        topic = subject.lessons[lastTopicIndex + 1];
-                    } else {
-                        topic = subject.lessons[0];
-                    }
+                if (response.ok) {
+                  const lastProgress = await response.json();
+                  
+                  if (lastProgress && lastProgress.topic_id) {
+                      const lastTopicIndex = subject.lessons.findIndex(l => l.id === lastProgress.topic_id);
+                      if (lastTopicIndex > -1 && lastTopicIndex + 1 < subject.lessons.length) {
+                          topic = subject.lessons[lastTopicIndex + 1];
+                      } else {
+                          // If last lesson was the final one, start from beginning.
+                          topic = subject.lessons[0];
+                      }
+                  } else {
+                      // No progress found, start with the first lesson.
+                      topic = subject.lessons[0];
+                  }
                 } else {
+                    // API failed, but we can still start the first lesson.
+                    console.warn('Failed to fetch user progress. Starting from first lesson.');
                     topic = subject.lessons[0];
                 }
-                
+
                 setCurrentTopic(topic);
                 // Immediately get the first message from the tutor
                 await sendUserMessageAndGetFeedback('start', topic);
 
             } catch (error) {
-                console.error('Error starting lesson:', error);
-                const topic = subject.lessons[0];
+                console.error('Error determining lesson start:', error);
+                // Fallback to first lesson even if fetch itself fails
+                topic = subject.lessons[0];
                 setCurrentTopic(topic);
-                const errorMessage: Message = {
-                    role: 'assistant',
-                    content: `I had a little trouble loading our lesson plan. Shall we start with "${topic.title}"?`,
-                };
-                setMessages([errorMessage]);
-                toast({
-                    variant: 'destructive',
-                    title: 'Could not load progress',
-                    description: 'Starting from the first lesson. Your progress may not have loaded.',
-                });
+                await sendUserMessageAndGetFeedback('start', topic);
             } finally {
                 setIsLoading(false);
             }
