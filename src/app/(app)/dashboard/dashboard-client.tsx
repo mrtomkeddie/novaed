@@ -138,8 +138,8 @@ export function DashboardClient() {
                     </CardContent>
                 </Card>
             ) : currentLesson && currentLesson.subject ? (
-                <Card className="shadow-lg hover:shadow-primary/20 transition-shadow">
-                    <CardHeader>
+                <Card className="shadow-lg hover:shadow-primary/20 transition-shadow p-4">
+                    <CardHeader className="pt-2 px-2 pb-4">
                         <div className="flex justify-between items-start">
                             <div>
                                 <p className="text-sm font-semibold text-primary">Today's Next Lesson</p>
@@ -150,7 +150,7 @@ export function DashboardClient() {
                             </div>
                         </div>
                     </CardHeader>
-                    <CardContent className="flex flex-col sm:flex-row gap-4 p-4">
+                    <CardContent className="p-0 flex flex-col sm:flex-row gap-4">
                          <Button asChild size="lg" className="flex-1 bg-btn-gradient text-accent-foreground hover:opacity-90 h-32">
                             <Link href={`/subjects/${currentLesson.subject.id}/chat`}>
                                 Start Lesson
