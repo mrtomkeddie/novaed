@@ -15,11 +15,11 @@ import path from 'path';
 // Read the master prompt from the markdown file.
 const getMasterPrompt = () => {
     try {
-        const promptFilePath = path.join(process.cwd(), 'prompt.md');
+        const promptFilePath = path.join(process.cwd(), 'public', 'Tutor Prompt.md');
         return fs.readFileSync(promptFilePath, 'utf-8');
     } catch (error) {
-        console.error("Could not read prompt.md:", error);
-        return "Error: Could not load the master prompt. The file 'prompt.md' may be missing.";
+        console.error("Could not read Tutor Prompt.md:", error);
+        return "Error: Could not load the master prompt. The file 'public/Tutor Prompt.md' may be missing.";
     }
 }
 
@@ -56,7 +56,7 @@ export default function PromptsPage() {
                     readOnly
                     id="master-prompt"
                     defaultValue={masterPrompt}
-                    className="h-48 resize-none font-mono text-sm"
+                    className="h-96 resize-none font-mono text-sm"
                   />
                 </div>
               </CardContent>
