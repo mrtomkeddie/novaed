@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -9,7 +8,6 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
-import { saveUserProfile, getUserProfile } from '@/ai/flows/user-profile';
 
 // Hardcoded user for "Charlie"
 const userId = 'charlie';
@@ -25,7 +23,15 @@ export function ProfileClient() {
     async function fetchProfile() {
       setIsLoading(true);
       try {
-        const profile = await getUserProfile({ userId });
+        const response = await fetch('/api/get-user-profile', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId }),
+        });
+        if (!response.ok) {
+            throw new Error('Failed to fetch profile data');
+        }
+        const profile = await response.json();
         if (profile) {
           setDisplayName(profile.displayName || 'Charlie');
         }
@@ -55,9 +61,13 @@ export function ProfileClient() {
     }
     setIsSaving(true);
     try {
-      await saveUserProfile({
-        userId,
-        profileData: { displayName }
+      await fetch('/api/save-user-profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+            userId, 
+            profileData: { displayName } 
+        }),
       });
       toast({
         title: 'Profile Updated!',

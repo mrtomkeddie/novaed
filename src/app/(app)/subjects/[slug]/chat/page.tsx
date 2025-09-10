@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
@@ -14,7 +13,6 @@ import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import type { Lesson, UserProfile } from '@/types';
 import { Calculator } from '@/components/calculator';
-import { getUserProfile } from '@/ai/flows/user-profile';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -62,9 +60,19 @@ export default function ChatPage() {
         const startLesson = async () => {
             setIsLoading(true);
             try {
-                const profile = await getUserProfile({ userId });
-                setUserProfile(profile);
+                const profileResponse = await fetch('/api/get-user-profile', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId }),
+                });
 
+                if (profileResponse.ok) {
+                    const profile = await profileResponse.json();
+                    setUserProfile(profile);
+                } else {
+                    console.warn('Could not fetch user profile for chat.');
+                }
+                
                 const response = await fetch('/api/get-user-progress', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },

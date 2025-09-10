@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -12,7 +11,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Timetable } from '@/components/timetable';
 import { ArrowRight, Gamepad2, SkipForward, CalendarDays, CheckCircle, RefreshCw, Loader2 } from 'lucide-react';
 import type { Subject } from '@/types';
-import { getUserProfile } from '@/ai/flows/user-profile';
 import { useToast } from '@/hooks/use-toast';
 
 type DailyLesson = {
@@ -70,7 +68,15 @@ export function DashboardClient() {
     async function fetchProfileAndSetGreeting() {
         setIsLoading(true);
         try {
-            const profile = await getUserProfile({ userId });
+            const response = await fetch('/api/get-user-profile', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId }),
+            });
+            if (!response.ok) {
+                throw new Error('Failed to fetch user profile');
+            }
+            const profile = await response.json();
             setWelcomeName(profile?.displayName || 'Learner');
             
             const returnGreetings = [
