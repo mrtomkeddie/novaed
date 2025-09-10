@@ -139,7 +139,7 @@ export function DashboardClient() {
                 </Card>
             ) : currentLesson && currentLesson.subject ? (
                 <Card className="shadow-lg hover:shadow-primary/20 transition-shadow">
-                    <CardHeader className="pt-4 px-4 pb-4">
+                    <CardHeader>
                         <div className="flex justify-between items-start">
                             <div>
                                 <p className="text-sm font-semibold text-primary">Today's Next Lesson</p>
@@ -150,15 +150,15 @@ export function DashboardClient() {
                             </div>
                         </div>
                     </CardHeader>
-                    <CardContent className="p-4 pt-0">
+                    <CardContent>
                          <div className="flex flex-col sm:flex-row gap-4">
-                             <Button asChild size="lg" className="w-full bg-btn-gradient text-accent-foreground hover:opacity-90 h-32">
+                             <Button asChild size="lg" className="w-full bg-btn-gradient text-accent-foreground hover:opacity-90 text-lg h-20 sm:h-auto">
                                 <Link href={`/subjects/${currentLesson.subject.id}/chat`}>
                                     Start Lesson
                                     <ArrowRight className="ml-2"/>
                                 </Link>
                             </Button>
-                            <Button size="lg" variant="outline" onClick={handleSkip} className="w-full h-32">
+                            <Button size="lg" variant="outline" onClick={handleSkip} className="w-full text-lg h-20 sm:h-auto">
                                 <SkipForward className="mr-2"/>
                                 Skip Lesson
                             </Button>
