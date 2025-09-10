@@ -21,6 +21,7 @@ const GetAITutorFeedbackInputSchema = z.object({
   topicTitle: z.string().describe('The specific topic title of the lesson.'),
   subject: z.string().describe('The subject the user is studying.'),
   chatHistory: z.array(ChatMessageSchema).describe('The conversation history so far.'),
+  lessonPhase: z.enum(['Warm-Up & Recap', 'Teach & Assess', 'Wind-Down & Bonus']).describe('The current phase of the 25-minute lesson.'),
 });
 
 // Define the output schema for the AI's feedback.
@@ -58,6 +59,8 @@ const aiTutorFeedbackFlow = ai.defineFlow(
       ${masterPrompt}
 
       Your goal is to teach the user about "${input.topicTitle}" in the subject "${input.subject}".
+
+      The lesson is currently in the "${input.lessonPhase}" phase. Follow the rules for this phase precisely.
 
       Rules for this specific interaction:
       1.  Keep your responses under 60 words.
