@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, Send, Bot, User, Loader2, CalculatorIcon, X } from 'lucide-react';
+import { ArrowLeft, Send, Bot, User, Loader2, CalculatorIcon, X, TimerIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -32,9 +32,13 @@ type Message = {
   multipleChoiceOptions?: string[] | null;
 };
 
+type LessonPhase = 'Warm-Up & Recap' | 'Teach & Assess' | 'Wind-Down & Bonus';
+
 // Hardcoded user for "Charlie"
 const userId = 'charlie';
 const userProfile: UserProfile = { displayName: 'Charlie' };
+
+const LESSON_DURATION_SECONDS = 25 * 60; // 25 minutes
 
 export default function ChatPage() {
   const params = useParams();
@@ -50,9 +54,42 @@ export default function ChatPage() {
   const [isLogging, setIsLogging] = useState(false);
   const [currentTopic, setCurrentTopic] = useState<Lesson | null>(null);
   const [isCalcOpen, setIsCalcOpen] = useState(false);
+  
+  const [timeRemaining, setTimeRemaining] = useState(LESSON_DURATION_SECONDS);
+  const [lessonPhase, setLessonPhase] = useState<LessonPhase>('Warm-Up & Recap');
+  const [isTimerRunning, setIsTimerRunning] = useState(false);
+
 
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const isInitialLoad = useRef(true);
+
+  // Timer effect
+  useEffect(() => {
+    if (!isTimerRunning || isLogging) return;
+
+    if (timeRemaining <= 0) {
+      handleEndLesson();
+      return;
+    }
+
+    const timerId = setInterval(() => {
+      setTimeRemaining(prev => prev - 1);
+    }, 1000);
+
+    return () => clearInterval(timerId);
+  }, [timeRemaining, isTimerRunning, isLogging]);
+
+  // Lesson phase effect
+  useEffect(() => {
+    if (timeRemaining > 20 * 60) {
+      setLessonPhase('Warm-Up & Recap');
+    } else if (timeRemaining > 5 * 60) {
+      setLessonPhase('Teach & Assess');
+    } else {
+      setLessonPhase('Wind-Down & Bonus');
+    }
+  }, [timeRemaining]);
+
 
   useEffect(() => {
     if (subject && isInitialLoad.current) {
@@ -100,6 +137,7 @@ export default function ChatPage() {
                 await sendUserMessageAndGetFeedback('start', topic);
             } finally {
                 setIsLoading(false);
+                setIsTimerRunning(true); // Start timer after initial load
             }
         };
         startLesson();
@@ -145,6 +183,7 @@ export default function ChatPage() {
           topicTitle: topicToUse.title,
           chatHistory: chatHistoryForApi,
           subject: subject.name,
+          lessonPhase: lessonPhase,
         }),
       });
   
@@ -182,6 +221,7 @@ export default function ChatPage() {
 
   const handleEndLesson = async () => {
     if (!subject || !currentTopic) return;
+    setIsTimerRunning(false);
     setIsLogging(true);
     toast({
       title: 'Ending lesson...',
@@ -251,6 +291,12 @@ export default function ChatPage() {
     }
   }
 
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+  };
+
   const lastMessage = messages[messages.length - 1];
   const lastMessageHasOptions =
     lastMessage?.role === 'assistant' &&
@@ -269,8 +315,8 @@ export default function ChatPage() {
   return (
     <div className="flex h-screen bg-background">
       <div className="flex flex-col flex-1 min-w-0">
-        <header className="relative flex items-center justify-between p-3 border-b bg-card h-16">
-            <div className="absolute left-2 sm:left-4">
+        <header className="relative flex items-center justify-between p-3 border-b bg-card h-20 sm:h-16">
+            <div className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2">
                 <Button asChild variant="ghost" size="icon" className="shrink-0">
                 <Link href="/dashboard">
                     <ArrowLeft />
@@ -279,16 +325,23 @@ export default function ChatPage() {
                 </Button>
             </div>
 
-            <div className="text-center px-14 sm:px-16 flex-1">
-                <h1 className="text-base sm:text-lg font-bold font-headline text-foreground truncate">
-                {currentTopic?.title || subject.name}
+            <div className="text-center px-14 sm:px-16 flex-1 flex flex-col items-center justify-center">
+                <h1 className="text-base sm:text-lg font-bold font-headline text-foreground truncate w-full">
+                  {currentTopic?.title || subject.name}
                 </h1>
-                <p className="text-xs sm:text-sm text-muted-foreground truncate">
-                {subject.name}
-                </p>
+                <div className="flex items-center gap-4 text-xs sm:text-sm text-muted-foreground">
+                    <span>{subject.name}</span>
+                    <span className="hidden sm:inline">•</span>
+                    <div className="flex items-center gap-1.5 font-mono">
+                        <TimerIcon className="w-4 h-4"/>
+                        <span>{formatTime(timeRemaining)}</span>
+                    </div>
+                     <span className="hidden sm:inline">•</span>
+                    <span>{lessonPhase}</span>
+                </div>
             </div>
             
-            <div className="absolute right-2 sm:right-4">
+            <div className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2">
                 <AlertDialog>
                 <AlertDialogTrigger asChild>
                     <Button variant="outline" disabled={isLogging || isNovaTyping}>
