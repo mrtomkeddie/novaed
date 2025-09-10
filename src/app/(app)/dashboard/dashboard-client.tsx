@@ -150,14 +150,14 @@ export function DashboardClient() {
                             </div>
                         </div>
                     </CardHeader>
-                    <CardContent className="flex flex-col sm:flex-row gap-3">
-                         <Button asChild size="lg" className="flex-1 bg-btn-gradient text-accent-foreground hover:opacity-90">
+                    <CardContent className="flex flex-col sm:flex-row gap-4 p-4">
+                         <Button asChild size="lg" className="flex-1 bg-btn-gradient text-accent-foreground hover:opacity-90 h-14 text-lg">
                             <Link href={`/subjects/${currentLesson.subject.id}/chat`}>
                                 Start Lesson
                                 <ArrowRight className="ml-2"/>
                             </Link>
                         </Button>
-                        <Button size="lg" variant="outline" onClick={handleSkip} className="flex-1">
+                        <Button size="lg" variant="outline" onClick={handleSkip} className="flex-1 h-14 text-lg">
                             <SkipForward className="mr-2"/>
                             Skip Lesson
                         </Button>
