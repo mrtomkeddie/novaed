@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
@@ -58,7 +59,7 @@ export default function ChatPage() {
   const [timeRemaining, setTimeRemaining] = useState(LESSON_DURATION_SECONDS);
   const [lessonPhase, setLessonPhase] = useState<LessonPhase>('Warm-Up & Recap');
   const [isTimerRunning, setIsTimerRunning] = useState(false);
-
+  const [isTimeUp, setIsTimeUp] = useState(false);
 
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const isInitialLoad = useRef(true);
@@ -68,7 +69,12 @@ export default function ChatPage() {
     if (!isTimerRunning || isLogging) return;
 
     if (timeRemaining <= 0) {
-      handleEndLesson();
+      setIsTimeUp(true); // Set time up flag
+      setIsTimerRunning(false); // Stop the timer
+      toast({
+        title: "Time's up!",
+        description: "Please finish your current thought. The lesson will end after your next message.",
+      });
       return;
     }
 
@@ -77,7 +83,7 @@ export default function ChatPage() {
     }, 1000);
 
     return () => clearInterval(timerId);
-  }, [timeRemaining, isTimerRunning, isLogging]);
+  }, [timeRemaining, isTimerRunning, isLogging, toast]);
 
   // Lesson phase effect
   useEffect(() => {
@@ -142,7 +148,7 @@ export default function ChatPage() {
         };
         startLesson();
     }
-  }, [subject, toast]);
+  }, [subject]);
 
   useEffect(() => {
     const viewport = scrollAreaRef.current?.querySelector('div[data-radix-scroll-area-viewport]');
@@ -202,6 +208,11 @@ export default function ChatPage() {
       };
       
       setMessages(prevMessages => [...prevMessages, assistantMessage]);
+      
+      // If time is up, end the lesson after this final response.
+      if (isTimeUp && !isFirstInteraction) {
+        handleEndLesson();
+      }
   
     } catch (error: any) {
       console.error('Error getting feedback:', error);
@@ -220,13 +231,16 @@ export default function ChatPage() {
   };
 
   const handleEndLesson = async () => {
-    if (!subject || !currentTopic) return;
+    if (!subject || !currentTopic || isLogging) return;
     setIsTimerRunning(false);
     setIsLogging(true);
     toast({
       title: 'Ending lesson...',
       description: 'Nova is summarizing your progress.',
     });
+
+    // Use a short delay to allow the toast to be seen before navigating
+    await new Promise(resolve => setTimeout(resolve, 1500));
 
     const simplifiedHistory = messages.map(m => ({
         role: m.role,
@@ -284,8 +298,10 @@ export default function ChatPage() {
       toast({
         variant: 'destructive',
         title: 'Error Ending Lesson',
-        description: error.message || 'Could not save your progress. Please try again.',
+        description: error.message || 'Could not save your progress. Redirecting to dashboard.',
       });
+      // Still redirect even if saving fails
+      router.push('/dashboard');
     } finally {
       setIsLogging(false);
     }
@@ -406,6 +422,7 @@ export default function ChatPage() {
                               variant="outline"
                               className="w-full sm:w-auto justify-center text-base px-6 py-3 h-auto"
                               onClick={() => sendUserMessageAndGetFeedback(option)}
+                              disabled={isTimeUp}
                             >
                               {option}
                             </Button>
@@ -445,16 +462,22 @@ export default function ChatPage() {
             <Input
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder={lastMessageHasOptions ? 'Select an option above' : 'Type your message to Nova...'}
+              placeholder={
+                isTimeUp
+                  ? 'Time is up. Type your final message...'
+                  : lastMessageHasOptions
+                  ? 'Select an option above'
+                  : 'Type your message to Nova...'
+              }
               autoComplete="off"
-              disabled={isNovaTyping || isLogging || lastMessageHasOptions}
+              disabled={isNovaTyping || isLogging || (lastMessageHasOptions && !isTimeUp)}
               className="text-base h-12 flex-1"
             />
             <Button type="button" variant="outline" size="lg" className="h-12 shrink-0 px-3 sm:px-4" onClick={() => setIsCalcOpen(true)}>
               <CalculatorIcon className="h-5 w-5" />
               <span className="sr-only sm:not-sr-only sm:ml-2">Calculator</span>
             </Button>
-            <Button type="submit" size="lg" disabled={!input.trim() || isNovaTyping || isLogging || lastMessageHasOptions} className="h-12 shrink-0 px-3 sm:px-4">
+            <Button type="submit" size="lg" disabled={!input.trim() || isNovaTyping || isLogging || (lastMessageHasOptions && !isTimeUp)} className="h-12 shrink-0 px-3 sm:px-4">
               <Send className="h-5 w-5" />
               <span className="sr-only sm:not-sr-only sm:ml-2">Send</span>
             </Button>
@@ -481,3 +504,5 @@ export default function ChatPage() {
     </div>
   );
 }
+
+    
