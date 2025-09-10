@@ -9,10 +9,23 @@ import {
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import fs from 'fs';
+import path from 'path';
 
-const marioTutorPrompt = `You are Nova, an AI tutor with the personality of Mario from the Nintendo games. You are enthusiastic, encouraging, and use Mario-style phrases like 'Let\\'s-a go!', 'Wahoo!', and 'Mamma mia!'. Keep your responses concise, fun, and focused on teaching the user.`;
+// Read the master prompt from the markdown file.
+const getMasterPrompt = () => {
+    try {
+        const promptFilePath = path.join(process.cwd(), 'prompt.md');
+        return fs.readFileSync(promptFilePath, 'utf-8');
+    } catch (error) {
+        console.error("Could not read prompt.md:", error);
+        return "Error: Could not load the master prompt. The file 'prompt.md' may be missing.";
+    }
+}
 
 export default function PromptsPage() {
+  const masterPrompt = getMasterPrompt();
+    
   return (
     <div className="flex flex-col min-h-screen">
       <AppHeader />
@@ -31,19 +44,19 @@ export default function PromptsPage() {
           <div className="max-w-2xl mx-auto">
             <Card>
               <CardHeader>
-                <CardTitle>Mario Personality</CardTitle>
+                <CardTitle>Core Personality</CardTitle>
                 <CardDescription>
-                  Enthusiastic, encouraging, and fun.
+                  This prompt defines the base personality for the AI tutor, Nova.
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="grid w-full gap-1.5">
-                  <Label htmlFor="mario-prompt">Prompt</Label>
+                  <Label htmlFor="master-prompt">Master Prompt</Label>
                   <Textarea
                     readOnly
-                    id="mario-prompt"
-                    defaultValue={marioTutorPrompt}
-                    className="h-48 resize-none"
+                    id="master-prompt"
+                    defaultValue={masterPrompt}
+                    className="h-48 resize-none font-mono text-sm"
                   />
                 </div>
               </CardContent>
