@@ -19,17 +19,16 @@ type DailyLesson = {
     subject: Subject | undefined;
 }
 
-const userId = 'charlie';
-
 export function DashboardClient() {
   const [todaysLessons, setTodaysLessons] = useState<DailyLesson[]>([]);
   const [currentLessonIndex, setCurrentLessonIndex] = useState(0);
   const [greeting, setGreeting] = useState("Welcome");
-  const [welcomeName, setWelcomeName] = useState('Learner');
-  const [isLoading, setIsLoading] = useState(true);
+  const welcomeName = 'Charlie'; // Hardcoded user name
+  const [isLoading, setIsLoading] = useState(true); // Only for lesson loading
   const { toast } = useToast();
 
   useEffect(() => {
+    setIsLoading(true);
     // Determine today's lessons from timetable
     const today = new Date().toLocaleDateString('en-US', { weekday: 'long' });
     const scheduledLessons = timetableData.find(d => d.day === today)?.periods || [];
@@ -65,40 +64,16 @@ export function DashboardClient() {
         localStorage.setItem('dailyProgress', JSON.stringify({ date: todayStr, index: 0 }));
     }
 
-    async function fetchProfileAndSetGreeting() {
-        setIsLoading(true);
-        try {
-            const response = await fetch('/api/get-user-profile', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId }),
-            });
-            if (!response.ok) {
-                throw new Error('Failed to fetch user profile');
-            }
-            const profile = await response.json();
-            setWelcomeName(profile?.displayName || 'Learner');
-            
-            const returnGreetings = [
-                "Welcome back", "Great to see you again", "Let's get learning",
-                "Ready for a new challenge?", "Time for another adventure",
-            ];
-            setGreeting(returnGreetings[Math.floor(Math.random() * returnGreetings.length)]);
-        } catch (error) {
-            console.error('Failed to fetch user profile', error);
-            toast({
-                title: 'Error',
-                description: 'Could not fetch user profile.',
-                variant: 'destructive'
-            })
-        } finally {
-            setIsLoading(false);
-        }
-    }
-    
-    fetchProfileAndSetGreeting();
+    // Set a random greeting
+    const returnGreetings = [
+        "Welcome back", "Great to see you again", "Let's get learning",
+        "Ready for a new challenge?", "Time for another adventure",
+    ];
+    setGreeting(returnGreetings[Math.floor(Math.random() * returnGreetings.length)]);
 
-  }, [toast]);
+    setIsLoading(false);
+
+  }, []);
 
   const handleSkip = () => {
     const newIndex = currentLessonIndex + 1;
