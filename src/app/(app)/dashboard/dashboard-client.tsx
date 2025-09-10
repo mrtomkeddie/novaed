@@ -138,8 +138,8 @@ export function DashboardClient() {
                     </CardContent>
                 </Card>
             ) : currentLesson && currentLesson.subject ? (
-                <Card className="shadow-lg hover:shadow-primary/20 transition-shadow p-4">
-                    <CardHeader className="pt-2 px-2 pb-4">
+                <Card className="shadow-lg hover:shadow-primary/20 transition-shadow">
+                    <CardHeader className="pt-4 px-4 pb-4">
                         <div className="flex justify-between items-start">
                             <div>
                                 <p className="text-sm font-semibold text-primary">Today's Next Lesson</p>
@@ -150,17 +150,19 @@ export function DashboardClient() {
                             </div>
                         </div>
                     </CardHeader>
-                    <CardContent className="p-0 flex flex-col sm:flex-row gap-4">
-                         <Button asChild size="lg" className="flex-1 bg-btn-gradient text-accent-foreground hover:opacity-90 h-32">
-                            <Link href={`/subjects/${currentLesson.subject.id}/chat`}>
-                                Start Lesson
-                                <ArrowRight className="ml-2"/>
-                            </Link>
-                        </Button>
-                        <Button size="lg" variant="outline" onClick={handleSkip} className="flex-1 h-32">
-                            <SkipForward className="mr-2"/>
-                            Skip Lesson
-                        </Button>
+                    <CardContent className="p-4 pt-0">
+                         <div className="flex flex-col sm:flex-row gap-4">
+                             <Button asChild size="lg" className="w-full bg-btn-gradient text-accent-foreground hover:opacity-90 h-32">
+                                <Link href={`/subjects/${currentLesson.subject.id}/chat`}>
+                                    Start Lesson
+                                    <ArrowRight className="ml-2"/>
+                                </Link>
+                            </Button>
+                            <Button size="lg" variant="outline" onClick={handleSkip} className="w-full h-32">
+                                <SkipForward className="mr-2"/>
+                                Skip Lesson
+                            </Button>
+                         </div>
                     </CardContent>
                 </Card>
             ) : (
