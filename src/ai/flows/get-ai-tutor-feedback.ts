@@ -79,22 +79,42 @@ const aiTutorFeedbackFlow = ai.defineFlow(
       {{/each}}
     `;
     
-    const { output } = await ai.generate({
-      prompt,
-      model: 'openai/gpt-4o',
-      output: {
-          schema: GetAITutorFeedbackOutputSchema,
-      },
-      context: {
-        chatHistory: input.chatHistory,
-      },
-    });
+    try {
+      const { output } = await ai.generate({
+        prompt,
+        model: 'openai/gpt-4o',
+        output: {
+            schema: GetAITutorFeedbackOutputSchema,
+        },
+        context: {
+          chatHistory: input.chatHistory,
+        },
+      });
 
-    if (!output) {
-      throw new Error("Failed to get AI tutor feedback.");
+      if (!output) {
+        console.error('AI generate returned null output');
+        throw new Error("AI returned null output");
+      }
+
+      // Validate the output matches our schema
+      const validatedOutput = GetAITutorFeedbackOutputSchema.parse(output);
+      return validatedOutput;
+      
+    } catch (error: any) {
+      console.error('Error in AI generation:', error);
+      
+      // Provide a fallback response to prevent complete failure
+      const fallbackResponse: GetAITutorFeedbackOutput = {
+        feedback: `Mamma mia! I'm having a little trouble right now. Let's keep going with our ${input.subject} lesson on "${input.topicTitle}". What would you like to explore next?`,
+        multipleChoiceOptions: [
+          "Tell me more about this topic",
+          "Ask me a question",
+          "Let's try something else"
+        ]
+      };
+      
+      return fallbackResponse;
     }
-    
-    return output;
   }
 );
 
