@@ -200,11 +200,16 @@ export default function ChatPage() {
   
       const result = await response.json();
       
+      // Validate the response structure
+      if (!result || typeof result.feedback !== 'string') {
+        throw new Error('Invalid response structure from AI tutor');
+      }
+      
       const assistantMessage: Message = {
         role: 'assistant',
         content: result.feedback,
         feedback: result.feedback,
-        multipleChoiceOptions: result.multipleChoiceOptions,
+        multipleChoiceOptions: result.multipleChoiceOptions || null,
       };
       
       setMessages(prevMessages => [...prevMessages, assistantMessage]);

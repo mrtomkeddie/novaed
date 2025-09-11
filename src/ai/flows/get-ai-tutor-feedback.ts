@@ -79,29 +79,51 @@ const aiTutorFeedbackFlow = ai.defineFlow(
       {{/each}}
     `;
     
-    try {
-      const { output } = await ai.generate({
-        prompt,
-        model: 'openai/gpt-4o',
-        output: {
-            schema: GetAITutorFeedbackOutputSchema,
-        },
-        context: {
-          chatHistory: input.chatHistory,
-        },
-      });
+    // Retry mechanism for better reliability
+    const maxRetries = 2;
+    let lastError: any;
+    
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        console.log(`Generating AI response for topic: ${input.topicTitle} (attempt ${attempt}/${maxRetries})`);
+        
+        const { output } = await ai.generate({
+          prompt,
+          model: 'openai/gpt-4o',
+          output: {
+              schema: GetAITutorFeedbackOutputSchema,
+          },
+          context: {
+            chatHistory: input.chatHistory,
+          },
+        });
 
-      if (!output) {
-        console.error('AI generate returned null output');
-        throw new Error("AI returned null output");
+        if (!output) {
+          throw new Error("AI returned null output");
+        }
+
+        // Validate the output matches our schema
+        const validatedOutput = GetAITutorFeedbackOutputSchema.parse(output);
+        console.log('Successfully generated and validated AI response');
+        return validatedOutput;
+        
+      } catch (error: any) {
+        console.error(`AI generation attempt ${attempt} failed:`, error);
+        lastError = error;
+        
+        // If this isn't the last attempt, continue to retry
+        if (attempt < maxRetries) {
+          console.log('Retrying AI generation...');
+          continue;
+        }
+        
+        // If all attempts failed, break and use fallback
+        break;
       }
-
-      // Validate the output matches our schema
-      const validatedOutput = GetAITutorFeedbackOutputSchema.parse(output);
-      return validatedOutput;
-      
-    } catch (error: any) {
-      console.error('Error in AI generation:', error);
+    }
+     
+     // If we reach here, all retries failed
+     console.error('All AI generation attempts failed, using fallback response. Last error:', lastError);
       
       // Provide a fallback response to prevent complete failure
       const fallbackResponse: GetAITutorFeedbackOutput = {
