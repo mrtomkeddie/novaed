@@ -1,10 +1,9 @@
-
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, Send, Bot, User, Loader2, CalculatorIcon, X, TimerIcon } from 'lucide-react';
+import { ArrowLeft, Send, Bot, User, Loader2, CalculatorIcon, X, TimerIcon, Pause, Play } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -351,6 +350,16 @@ export default function ChatPage() {
                     <div className="flex items-center gap-1.5 font-mono">
                         <TimerIcon className="w-4 h-4"/>
                         <span>{formatTime(timeRemaining)}</span>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6"
+                            onClick={() => setIsTimerRunning(prev => !prev)}
+                            disabled={isTimeUp}
+                        >
+                            {isTimerRunning ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+                            <span className="sr-only">{isTimerRunning ? 'Pause timer' : 'Resume timer'}</span>
+                        </Button>
                     </div>
                      <span className="hidden sm:inline">•</span>
                     <span>{lessonPhase}</span>
@@ -504,5 +513,3 @@ export default function ChatPage() {
     </div>
   );
 }
-
-    
