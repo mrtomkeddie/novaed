@@ -430,7 +430,7 @@ export default function ChatPage() {
                     >
                     {message.role === 'assistant' && (
                         <Avatar className="w-8 h-8">
-                        <AvatarImage src="/nova.png" alt="NovaEd Icon" />
+                        <AvatarImage src="/icon.png" alt="NovaEd Icon" />
                         <AvatarFallback>
                             <Bot className="w-5 h-5"/>
                         </AvatarFallback>
@@ -478,7 +478,7 @@ export default function ChatPage() {
                 {isNovaTyping && (
                     <div className="flex items-start gap-3">
                     <Avatar className="w-8 h-8">
-                        <AvatarImage src="/nova.png" alt="NovaEd Icon" />
+                        <AvatarImage src="/icon.png" alt="NovaEd Icon" />
                         <AvatarFallback>
                             <Bot className="w-5 h-5"/>
                         </AvatarFallback>
@@ -543,5 +543,7 @@ export default function ChatPage() {
     </>
   );
 }
+
+    
 
     
