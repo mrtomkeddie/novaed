@@ -335,6 +335,7 @@ export default function ChatPage() {
   }
   
   const showPauseDialog = !isTimerRunning && !isLoading && !isLogging && !isTimeUp;
+  const showCalculator = ['maths', 'physics', 'chemistry'].some(term => subject.name.toLowerCase().includes(term));
 
   return (
     <>
@@ -508,10 +509,12 @@ export default function ChatPage() {
                 disabled={isNovaTyping || isLogging || (lastMessageHasOptions && !isTimeUp)}
                 className="text-base h-12 flex-1"
                 />
-                <Button type="button" variant="outline" size="lg" className="h-12 shrink-0 px-3 sm:px-4" onClick={() => setIsCalcOpen(true)}>
-                <CalculatorIcon className="h-5 w-5" />
-                <span className="sr-only sm:not-sr-only sm:ml-2">Calculator</span>
-                </Button>
+                {showCalculator && (
+                  <Button type="button" variant="outline" size="lg" className="h-12 shrink-0 px-3 sm:px-4" onClick={() => setIsCalcOpen(true)}>
+                    <CalculatorIcon className="h-5 w-5" />
+                    <span className="sr-only sm:not-sr-only sm:ml-2">Calculator</span>
+                  </Button>
+                )}
                 <Button type="submit" size="lg" disabled={!input.trim() || isNovaTyping || isLogging || (lastMessageHasOptions && !isTimeUp)} className="h-12 shrink-0 px-3 sm:px-4">
                 <Send className="h-5 w-5" />
                 <span className="sr-only sm:not-sr-only sm:ml-2">Send</span>
