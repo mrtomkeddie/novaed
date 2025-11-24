@@ -31,6 +31,21 @@ const GetAITutorFeedbackOutputSchema = z.object({
 });
 export type GetAITutorFeedbackOutput = z.infer<typeof GetAITutorFeedbackOutputSchema>;
 
+// Helper to get the correct subject prompt file
+const getSubjectPromptFile = (subjectName: string): string => {
+    const lowerCaseSubject = subjectName.toLowerCase();
+    if (lowerCaseSubject.includes('maths')) {
+        return 'maths.md';
+    }
+    if (lowerCaseSubject.includes('physics') || lowerCaseSubject.includes('chemistry') || lowerCaseSubject.includes('biology')) {
+        return 'science.md';
+    }
+    if (lowerCaseSubject.includes('english')) {
+        return 'english.md';
+    }
+    return 'default.md'; // A fallback generic prompt
+};
+
 
 // Define the main flow.
 const aiTutorFeedbackFlow = ai.defineFlow(
@@ -50,13 +65,25 @@ const aiTutorFeedbackFlow = ai.defineFlow(
         };
     }
 
-    // Read the master prompt from the markdown file.
-    const promptFilePath = path.join(process.cwd(), 'public', 'Tutor Prompt.md');
-    const masterPrompt = fs.readFileSync(promptFilePath, 'utf-8');
+    // Read the master personality prompt
+    const personalityPromptPath = path.join(process.cwd(), 'public', 'Tutor Prompt.md');
+    const personalityPrompt = fs.readFileSync(personalityPromptPath, 'utf-8');
+
+    // Read the subject-specific prompt
+    const subjectPromptFile = getSubjectPromptFile(input.subject);
+    const subjectPromptPath = path.join(process.cwd(), 'public', 'prompts', subjectPromptFile);
+    let subjectPrompt = '';
+    try {
+        subjectPrompt = fs.readFileSync(subjectPromptPath, 'utf-8');
+    } catch (error) {
+        console.warn(`Could not read subject prompt file: ${subjectPromptFile}. Using personality prompt only.`);
+    }
     
     // The prompt now combines the master instructions with dynamic data.
     const prompt = `
-      ${masterPrompt}
+      ${personalityPrompt}
+
+      ${subjectPrompt}
 
       Your goal is to teach the user about "${input.topicTitle}" in the subject "${input.subject}".
 
