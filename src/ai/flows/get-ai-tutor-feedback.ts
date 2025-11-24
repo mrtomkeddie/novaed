@@ -43,6 +43,10 @@ const getSubjectPromptFile = (subjectName: string): string => {
     if (lowerCaseSubject.includes('english')) {
         return 'english.md';
     }
+    // Add a case for the new Creator Mode
+    if (lowerCaseSubject.includes('creator')) {
+        return 'creator.md';
+    }
     return 'default.md'; // A fallback generic prompt
 };
 
@@ -69,7 +73,7 @@ const aiTutorFeedbackFlow = ai.defineFlow(
     const personalityPromptPath = path.join(process.cwd(), 'public', 'Tutor Prompt.md');
     const personalityPrompt = fs.readFileSync(personalityPromptPath, 'utf-8');
 
-    // Read the subject-specific prompt
+    // Read the subject-specific module prompt
     const subjectPromptFile = getSubjectPromptFile(input.subject);
     const subjectPromptPath = path.join(process.cwd(), 'public', 'prompts', subjectPromptFile);
     let subjectPrompt = '';
@@ -79,7 +83,7 @@ const aiTutorFeedbackFlow = ai.defineFlow(
         console.warn(`Could not read subject prompt file: ${subjectPromptFile}. Using personality prompt only.`);
     }
     
-    // The prompt now combines the master instructions with dynamic data.
+    // The prompt now combines the master instructions with the subject-specific module.
     const prompt = `
       ${personalityPrompt}
 
