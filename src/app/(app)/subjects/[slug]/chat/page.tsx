@@ -24,6 +24,13 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
 
 type Message = {
   role: 'user' | 'assistant';
@@ -326,190 +333,210 @@ export default function ChatPage() {
       </div>
     );
   }
+  
+  const showPauseDialog = !isTimerRunning && !isLoading && !isLogging && !isTimeUp;
 
   return (
-    <div className="flex h-screen bg-background">
-      <div className="flex flex-col flex-1 min-w-0">
-        <header className="relative flex items-center justify-between p-3 border-b bg-card h-20 sm:h-16">
-            <div className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2">
-                <Button asChild variant="ghost" size="icon" className="shrink-0">
-                <Link href="/dashboard">
-                    <ArrowLeft />
-                    <span className="sr-only">Back to Dashboard</span>
-                </Link>
+    <>
+      <Dialog open={showPauseDialog} onOpenChange={(open) => setIsTimerRunning(open)}>
+        <DialogContent showCloseButton={false} onInteractOutside={(e) => e.preventDefault()} onEscapeKeyDown={(e) => e.preventDefault()}>
+          <DialogHeader className="items-center text-center">
+            <DialogTitle className="text-2xl">Lesson Paused</DialogTitle>
+            <DialogDescription>
+              Take your time. The lesson will be waiting for you.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-center p-4">
+            <Button size="lg" onClick={() => setIsTimerRunning(true)}>
+              <Play className="mr-2" />
+              Resume Lesson
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+      <div className="flex h-screen bg-background">
+        <div className="flex flex-col flex-1 min-w-0">
+            <header className="relative flex items-center justify-between p-3 border-b bg-card h-20 sm:h-16">
+                <div className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2">
+                    <Button asChild variant="ghost" size="icon" className="shrink-0">
+                    <Link href="/dashboard">
+                        <ArrowLeft />
+                        <span className="sr-only">Back to Dashboard</span>
+                    </Link>
+                    </Button>
+                </div>
+
+                <div className="text-center px-14 sm:px-16 flex-1 flex flex-col items-center justify-center">
+                    <h1 className="text-base sm:text-lg font-bold font-headline text-foreground truncate w-full">
+                    {currentTopic?.title || subject.name}
+                    </h1>
+                    <div className="flex items-center gap-4 text-xs sm:text-sm text-muted-foreground">
+                        <span>{subject.name}</span>
+                        <span className="hidden sm:inline">•</span>
+                        <div className="flex items-center gap-1.5 font-mono">
+                            <TimerIcon className="w-4 h-4"/>
+                            <span>{formatTime(timeRemaining)}</span>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-6 w-6"
+                                onClick={() => setIsTimerRunning(false)}
+                                disabled={isTimeUp || !isTimerRunning}
+                            >
+                                <Pause className="w-4 h-4" />
+                                <span className="sr-only">Pause timer</span>
+                            </Button>
+                        </div>
+                        <span className="hidden sm:inline">•</span>
+                        <span>{lessonPhase}</span>
+                    </div>
+                </div>
+                
+                <div className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2">
+                    <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                        <Button variant="outline" disabled={isLogging || isNovaTyping}>
+                        {isLogging ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                        End Lesson
+                        </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                        <AlertDialogTitle>Are you sure you want to end the lesson?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            This will save your progress and return you to the dashboard.
+                        </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleEndLesson}>Continue</AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                    </AlertDialog>
+                </div>
+            </header>
+
+            <main className="flex-1 overflow-hidden">
+            <ScrollArea className="h-full" ref={scrollAreaRef}>
+                <div className="p-4 space-y-6">
+                {messages.map((message, index) => (
+                    <div
+                    key={index}
+                    className={cn(
+                        'flex items-start gap-3',
+                        message.role === 'user' ? 'justify-end' : ''
+                    )}
+                    >
+                    {message.role === 'assistant' && (
+                        <Avatar className="w-8 h-8">
+                        <AvatarImage src="/icon.png" alt="NovaEd Icon" />
+                        <AvatarFallback>
+                            <Bot className="w-5 h-5"/>
+                        </AvatarFallback>
+                        </Avatar>
+                    )}
+                    <div
+                        className={cn(
+                        'p-3 rounded-lg max-w-lg lg:max-w-xl shadow-sm relative group',
+                        message.role === 'user'
+                            ? 'bg-primary text-primary-foreground'
+                            : 'bg-card'
+                        )}
+                    >
+                        <p className="text-base whitespace-pre-wrap">{message.feedback || message.content}</p>
+                        
+                        {message.role === 'assistant' &&
+                        message.multipleChoiceOptions &&
+                        message.multipleChoiceOptions.length > 0 &&
+                        index === messages.length - 1 &&
+                        !isNovaTyping && (
+                            <div className="mt-4 flex flex-col sm:flex-row sm:flex-wrap gap-3">
+                            {message.multipleChoiceOptions.map((option, i) => (
+                                <Button
+                                key={i}
+                                variant="outline"
+                                className="w-full sm:w-auto justify-center text-base px-6 py-3 h-auto"
+                                onClick={() => sendUserMessageAndGetFeedback(option)}
+                                disabled={isTimeUp}
+                                >
+                                {option}
+                                </Button>
+                            ))}
+                            </div>
+                        )}
+                    </div>
+                    {message.role === 'user' && (
+                        <Avatar className="w-8 h-8">
+                        <AvatarFallback>
+                            <User className="w-5 h-5"/>
+                        </AvatarFallback>
+                        </Avatar>
+                    )}
+                    </div>
+                ))}
+                {isNovaTyping && (
+                    <div className="flex items-start gap-3">
+                    <Avatar className="w-8 h-8">
+                        <AvatarImage src="/icon.png" alt="NovaEd Icon" />
+                        <AvatarFallback>
+                            <Bot className="w-5 h-5"/>
+                        </AvatarFallback>
+                        </Avatar>
+                        <div className="p-3 rounded-lg bg-card flex items-center space-x-2 shadow-sm">
+                        <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                        <span className="text-sm text-muted-foreground">Nova is thinking...</span>
+                        </div>
+                    </div>
+                )}
+                </div>
+            </ScrollArea>
+            </main>
+
+            <footer className="p-2 sm:p-4 border-t bg-card">
+            <form onSubmit={(e) => { e.preventDefault(); sendUserMessageAndGetFeedback(input); }} className="flex items-center gap-2 sm:gap-3">
+                <Input
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                placeholder={
+                    isTimeUp
+                    ? 'Time is up. Type your final message...'
+                    : lastMessageHasOptions
+                    ? 'Select an option above'
+                    : 'Type your message to Nova...'
+                }
+                autoComplete="off"
+                disabled={isNovaTyping || isLogging || (lastMessageHasOptions && !isTimeUp)}
+                className="text-base h-12 flex-1"
+                />
+                <Button type="button" variant="outline" size="lg" className="h-12 shrink-0 px-3 sm:px-4" onClick={() => setIsCalcOpen(true)}>
+                <CalculatorIcon className="h-5 w-5" />
+                <span className="sr-only sm:not-sr-only sm:ml-2">Calculator</span>
+                </Button>
+                <Button type="submit" size="lg" disabled={!input.trim() || isNovaTyping || isLogging || (lastMessageHasOptions && !isTimeUp)} className="h-12 shrink-0 px-3 sm:px-4">
+                <Send className="h-5 w-5" />
+                <span className="sr-only sm:not-sr-only sm:ml-2">Send</span>
+                </Button>
+            </form>
+            </footer>
+        </div>
+        <aside className={cn(
+            "flex-col border-l bg-card transition-[width] duration-300 ease-in-out",
+            isCalcOpen ? "flex w-[320px] sm:w-[360px]" : "w-0"
+        )}>
+            <div className={cn("overflow-hidden", !isCalcOpen && "hidden")}>
+            <div className="flex items-center justify-between p-4 border-b h-16 shrink-0">
+                <h2 className="text-lg font-semibold font-headline">Scientific Calculator</h2>
+                <Button variant="ghost" size="icon" onClick={() => setIsCalcOpen(false)}>
+                    <X className="h-4 w-4" />
+                    <span className="sr-only">Close calculator</span>
                 </Button>
             </div>
-
-            <div className="text-center px-14 sm:px-16 flex-1 flex flex-col items-center justify-center">
-                <h1 className="text-base sm:text-lg font-bold font-headline text-foreground truncate w-full">
-                  {currentTopic?.title || subject.name}
-                </h1>
-                <div className="flex items-center gap-4 text-xs sm:text-sm text-muted-foreground">
-                    <span>{subject.name}</span>
-                    <span className="hidden sm:inline">•</span>
-                    <div className="flex items-center gap-1.5 font-mono">
-                        <TimerIcon className="w-4 h-4"/>
-                        <span>{formatTime(timeRemaining)}</span>
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-6 w-6"
-                            onClick={() => setIsTimerRunning(prev => !prev)}
-                            disabled={isTimeUp}
-                        >
-                            {isTimerRunning ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
-                            <span className="sr-only">{isTimerRunning ? 'Pause timer' : 'Resume timer'}</span>
-                        </Button>
-                    </div>
-                     <span className="hidden sm:inline">•</span>
-                    <span>{lessonPhase}</span>
-                </div>
+            <div className="p-4">
+                <Calculator />
             </div>
-            
-            <div className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2">
-                <AlertDialog>
-                <AlertDialogTrigger asChild>
-                    <Button variant="outline" disabled={isLogging || isNovaTyping}>
-                    {isLogging ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                    End Lesson
-                    </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                    <AlertDialogTitle>Are you sure you want to end the lesson?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                        This will save your progress and return you to the dashboard.
-                    </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleEndLesson}>Continue</AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-                </AlertDialog>
             </div>
-        </header>
-
-        <main className="flex-1 overflow-hidden">
-          <ScrollArea className="h-full" ref={scrollAreaRef}>
-            <div className="p-4 space-y-6">
-              {messages.map((message, index) => (
-                <div
-                  key={index}
-                  className={cn(
-                    'flex items-start gap-3',
-                    message.role === 'user' ? 'justify-end' : ''
-                  )}
-                >
-                  {message.role === 'assistant' && (
-                    <Avatar className="w-8 h-8">
-                      <AvatarImage src="/icon.png" alt="NovaEd Icon" />
-                      <AvatarFallback>
-                        <Bot className="w-5 h-5"/>
-                      </AvatarFallback>
-                    </Avatar>
-                  )}
-                  <div
-                    className={cn(
-                      'p-3 rounded-lg max-w-lg lg:max-w-xl shadow-sm relative group',
-                      message.role === 'user'
-                        ? 'bg-primary text-primary-foreground'
-                        : 'bg-card'
-                    )}
-                  >
-                    <p className="text-base whitespace-pre-wrap">{message.feedback || message.content}</p>
-                    
-                    {message.role === 'assistant' &&
-                      message.multipleChoiceOptions &&
-                      message.multipleChoiceOptions.length > 0 &&
-                      index === messages.length - 1 &&
-                      !isNovaTyping && (
-                        <div className="mt-4 flex flex-col sm:flex-row sm:flex-wrap gap-3">
-                          {message.multipleChoiceOptions.map((option, i) => (
-                            <Button
-                              key={i}
-                              variant="outline"
-                              className="w-full sm:w-auto justify-center text-base px-6 py-3 h-auto"
-                              onClick={() => sendUserMessageAndGetFeedback(option)}
-                              disabled={isTimeUp}
-                            >
-                              {option}
-                            </Button>
-                          ))}
-                        </div>
-                      )}
-                  </div>
-                  {message.role === 'user' && (
-                    <Avatar className="w-8 h-8">
-                      <AvatarFallback>
-                        <User className="w-5 h-5"/>
-                      </AvatarFallback>
-                    </Avatar>
-                  )}
-                </div>
-              ))}
-              {isNovaTyping && (
-                <div className="flex items-start gap-3">
-                  <Avatar className="w-8 h-8">
-                      <AvatarImage src="/icon.png" alt="NovaEd Icon" />
-                      <AvatarFallback>
-                        <Bot className="w-5 h-5"/>
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="p-3 rounded-lg bg-card flex items-center space-x-2 shadow-sm">
-                      <Loader2 className="h-5 w-5 animate-spin text-primary" />
-                      <span className="text-sm text-muted-foreground">Nova is thinking...</span>
-                    </div>
-                </div>
-              )}
-            </div>
-          </ScrollArea>
-        </main>
-
-        <footer className="p-2 sm:p-4 border-t bg-card">
-          <form onSubmit={(e) => { e.preventDefault(); sendUserMessageAndGetFeedback(input); }} className="flex items-center gap-2 sm:gap-3">
-            <Input
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder={
-                isTimeUp
-                  ? 'Time is up. Type your final message...'
-                  : lastMessageHasOptions
-                  ? 'Select an option above'
-                  : 'Type your message to Nova...'
-              }
-              autoComplete="off"
-              disabled={isNovaTyping || isLogging || (lastMessageHasOptions && !isTimeUp)}
-              className="text-base h-12 flex-1"
-            />
-            <Button type="button" variant="outline" size="lg" className="h-12 shrink-0 px-3 sm:px-4" onClick={() => setIsCalcOpen(true)}>
-              <CalculatorIcon className="h-5 w-5" />
-              <span className="sr-only sm:not-sr-only sm:ml-2">Calculator</span>
-            </Button>
-            <Button type="submit" size="lg" disabled={!input.trim() || isNovaTyping || isLogging || (lastMessageHasOptions && !isTimeUp)} className="h-12 shrink-0 px-3 sm:px-4">
-              <Send className="h-5 w-5" />
-              <span className="sr-only sm:not-sr-only sm:ml-2">Send</span>
-            </Button>
-          </form>
-        </footer>
+        </aside>
       </div>
-      <aside className={cn(
-          "flex-col border-l bg-card transition-[width] duration-300 ease-in-out",
-          isCalcOpen ? "flex w-[320px] sm:w-[360px]" : "w-0"
-      )}>
-        <div className={cn("overflow-hidden", !isCalcOpen && "hidden")}>
-          <div className="flex items-center justify-between p-4 border-b h-16 shrink-0">
-            <h2 className="text-lg font-semibold font-headline">Scientific Calculator</h2>
-            <Button variant="ghost" size="icon" onClick={() => setIsCalcOpen(false)}>
-                <X className="h-4 w-4" />
-                <span className="sr-only">Close calculator</span>
-            </Button>
-          </div>
-          <div className="p-4">
-            <Calculator />
-          </div>
-        </div>
-      </aside>
-    </div>
+    </>
   );
 }
