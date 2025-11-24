@@ -16,8 +16,8 @@ export const metadata: Metadata = {
   title: 'NovaEd',
   description: 'Your personal AI-powered home learning companion.',
   icons: {
-    icon: '/nova.png', // Standard favicon
-    apple: '/nova.png', // Apple touch icon for home screen
+    icon: '/icon.png', // Standard favicon
+    apple: '/icon.png', // Apple touch icon for home screen
   },
   manifest: '/manifest.json',
 };
@@ -34,7 +34,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="h-full dark">
        <head>
-        <link rel="apple-touch-icon" href="/nova.png"></link>
+        <link rel="apple-touch-icon" href="/icon.png"></link>
       </head>
       <body className={cn("font-sans antialiased h-full", ptSans.variable)} suppressHydrationWarning>
         <PWALoader />
