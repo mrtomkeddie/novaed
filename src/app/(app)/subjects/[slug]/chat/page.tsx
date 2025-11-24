@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
@@ -371,32 +372,31 @@ export default function ChatPage() {
                     <h1 className="text-base sm:text-lg font-bold font-headline text-foreground truncate w-full">
                     {currentTopic?.title || subject.name}
                     </h1>
-                    <div className="flex items-center gap-4 text-xs sm:text-sm text-muted-foreground">
+                    <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground mt-1">
                         <span>{subject.name}</span>
-                        <span className="hidden sm:inline">•</span>
-                        <div className="flex items-center gap-1.5 font-mono">
-                            <TimerIcon className="w-4 h-4"/>
-                            <span>{formatTime(timeRemaining)}</span>
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-6 w-6"
-                                onClick={() => setIsTimerRunning(false)}
-                                disabled={isTimeUp || !isTimerRunning}
-                            >
-                                <Pause className="w-4 h-4" />
-                                <span className="sr-only">Pause timer</span>
-                            </Button>
-                        </div>
-                        <span className="hidden sm:inline">•</span>
+                        <span className="hidden sm:inline mx-1">•</span>
                         <span>{lessonPhase}</span>
                     </div>
                 </div>
                 
-                <div className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2">
+                <div className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                    <div className="flex items-center gap-2 rounded-md bg-secondary px-3 py-1.5 font-mono text-secondary-foreground">
+                        <TimerIcon className="w-5 h-5 text-primary" />
+                        <span className="text-lg font-semibold">{formatTime(timeRemaining)}</span>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6 ml-1"
+                            onClick={() => setIsTimerRunning(false)}
+                            disabled={isTimeUp || !isTimerRunning}
+                        >
+                            <Pause className="w-4 h-4" />
+                            <span className="sr-only">Pause timer</span>
+                        </Button>
+                    </div>
                     <AlertDialog>
                     <AlertDialogTrigger asChild>
-                        <Button variant="outline" disabled={isLogging || isNovaTyping}>
+                        <Button variant="outline" disabled={isLogging || isNovaTyping} className="hidden sm:flex">
                         {isLogging ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                         End Lesson
                         </Button>
@@ -430,7 +430,7 @@ export default function ChatPage() {
                     >
                     {message.role === 'assistant' && (
                         <Avatar className="w-8 h-8">
-                        <AvatarImage src="/icon.png" alt="NovaEd Icon" />
+                        <AvatarImage src="/nova.png" alt="NovaEd Icon" />
                         <AvatarFallback>
                             <Bot className="w-5 h-5"/>
                         </AvatarFallback>
@@ -478,7 +478,7 @@ export default function ChatPage() {
                 {isNovaTyping && (
                     <div className="flex items-start gap-3">
                     <Avatar className="w-8 h-8">
-                        <AvatarImage src="/icon.png" alt="NovaEd Icon" />
+                        <AvatarImage src="/nova.png" alt="NovaEd Icon" />
                         <AvatarFallback>
                             <Bot className="w-5 h-5"/>
                         </AvatarFallback>
@@ -543,3 +543,5 @@ export default function ChatPage() {
     </>
   );
 }
+
+    
