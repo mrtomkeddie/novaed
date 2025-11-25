@@ -198,7 +198,8 @@ export function DashboardClient() {
                       </Button>
                   </DialogTrigger>
                   <DialogContent className="max-w-[95vw] sm:max-w-5xl">
-                      <DialogHeader className="flex-row items-center justify-between">
+                      <DialogHeader>
+                        <div className="flex items-center gap-4">
                           <DialogTitle>Weekly Timetable</DialogTitle>
                            <div className="flex items-center gap-2">
                                 <Button
@@ -216,6 +217,7 @@ export function DashboardClient() {
                                     Week 2
                                 </Button>
                             </div>
+                          </div>
                       </DialogHeader>
                       <Timetable selectedWeek={selectedWeek} />
                   </DialogContent>
