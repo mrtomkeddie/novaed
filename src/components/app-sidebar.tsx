@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Map, LayoutDashboard, Gamepad2, Award, UserCircle2, Bot, FileText } from 'lucide-react';
+import { Map, LayoutDashboard, Gamepad2, Award, UserCircle2, Settings } from 'lucide-react';
 
 export function AppSidebar() {
   const pathname = usePathname();
@@ -15,13 +15,12 @@ export function AppSidebar() {
     { href: '/curriculum', label: 'Subjects', icon: Map, exact: false },
     { href: '/progress', label: 'Progress', icon: Award, exact: true },
     { href: '/free-play', label: 'Free Play', icon: Gamepad2, exact: true },
-    { href: '/prompts', label: 'Tutor Prompts', icon: Bot, exact: true },
-    { href: '/lesson-structure', label: 'Lesson Structure', icon: FileText, exact: true },
     { href: '/profile', label: 'Profile', icon: UserCircle2, exact: true },
+    { href: '/settings', label: 'Settings', icon: Settings, exact: false },
   ];
 
   return (
-    <aside className="w-64 flex-shrink-0 bg-card text-card-foreground flex flex-col">
+    <aside className="w-64 flex-shrink-0 bg-card text-card-foreground flex flex-col h-screen">
         <div className="border-b p-4 h-20 flex items-center flex-shrink-0">
             <Link href="/dashboard" className="flex items-center gap-2">
                 <Image
