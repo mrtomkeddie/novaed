@@ -46,13 +46,13 @@ export const subjects: Subject[] = [
       { id: 'ma-2-5-1', title: 'Coding & Coordinates', description: 'Scratch or Blockly movement & grid maths', stage: 'Development', completed: false },
       { id: 'ma-2-6-1', title: 'Interpreting Real Data', description: 'Infographics, habit/weather tracking', stage: 'Development', completed: false },
       { id: 'ma-2-7-1', title: 'Multi-Step Estimation', description: 'Estimate costs of days out, weekly budgets', stage: 'Development', completed: false },
-      { id: 'ma-3-1-1', title: 'Planning a Business Project', description: 'Market research, cost analysis, pricing strategy', stage: 'Mastery', completed: false },
-      { id: 'ma-3-2-1', title: 'Real-World Percentages', description: 'Sale discounts, tips, commission, VAT calculations', stage: 'Mastery', completed: false },
-      { id: 'ma-3-3-1', title: 'Data Analysis Projects', description: 'Collect, analyse & present data on a topic of interest', stage: 'Mastery', completed: false },
-      { id: 'ma-3-4-1', title: 'Geometry in Design', description: 'Logo creation, game character models, level design', stage: 'Mastery', completed: false },
-      { id: 'ma-3-5-1', title: 'Advanced Puzzle Challenges', description: 'Multi-step logic puzzles, codebreaking, escape rooms', stage: 'Mastery', completed: false },
-      { id: 'ma-3-6-1', title: 'Project Costing & ROI', description: 'Budget vs actuals, calculating return on investment', stage: 'Mastery', completed: false },
-      { id: 'ma-3-7-1', title: 'Time Management with Maths', description: 'Gantt charts, project timelines, scheduling', stage: 'Mastery', completed: false },
+      { id: 'ma-3-1-1', title: 'Planning a Business Project', description: 'Profit/loss, pricing, startup budgets', stage: 'Mastery', completed: false },
+      { id: 'ma-3-2-1', title: 'Real-World Percentages', description: 'Discounts, tax, compound interest', stage: 'Mastery', completed: false },
+      { id: 'ma-3-3-1', title: 'Data Analysis Projects', description: 'Create surveys, collect and analyse data', stage: 'Mastery', completed: false },
+      { id: 'ma-3-4-1', title: 'Geometry in Design', description: 'Scale blueprints for a room, game level, comic panel', stage: 'Mastery', completed: false },
+      { id: 'ma-3-5-1', title: 'Advanced Puzzle Challenges', description: 'Codebreaking, strategy maths', stage: 'Mastery', completed: false },
+      { id: 'ma-3-6-1', title: 'Project Costing & ROI', description: 'Compare costs vs. outcome on creative ideas', stage: 'Mastery', completed: false },
+      { id: 'ma-3-7-1', title: 'Time Management with Maths', description: 'Build a daily routine using estimated durations', stage: 'Mastery', completed: false },
     ],
   },
   {
@@ -300,5 +300,7 @@ export const subjects: Subject[] = [
     ],
   },
 ];
+
+    
 
     
