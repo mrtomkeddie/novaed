@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -31,16 +32,20 @@ export function DashboardClient() {
     setIsLoading(true);
     // Determine today's lessons from timetable
     const today = new Date().toLocaleDateString('en-US', { weekday: 'long' });
-    const scheduledLessons = timetableData.find(d => d.day === today)?.periods || [];
+    
+    // For simplicity, we'll just use week 1's schedule for the dashboard logic
+    const week1Data = timetableData.find(w => w.week === 1);
+    const scheduledLessons = week1Data?.days.find(d => d.day === today)?.periods || [];
     
     const lessonsWithSubjects: DailyLesson[] = scheduledLessons.map(lessonName => {
+        if (!lessonName) return null;
         const subject = subjects.find(s => s.name.toLowerCase() === lessonName.toLowerCase());
         return {
             subjectName: lessonName,
             lessonTitle: subject?.description || 'Time to learn!',
             subject: subject,
         };
-    }).filter(l => l.subject);
+    }).filter((l): l is DailyLesson => l !== null && l.subject !== undefined);
 
     setTodaysLessons(lessonsWithSubjects);
 

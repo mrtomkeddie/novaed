@@ -8,10 +8,22 @@ import {
   FlaskConical,
   PenSquare,
   Sigma,
+  Blend,
 } from 'lucide-react';
 
 // The 'href' for each subject has been updated to point to the chat page.
 export const subjects: Subject[] = [
+  {
+    id: 'synthesis',
+    name: 'Synthesis',
+    description: 'Combine ideas from different subjects in creative ways.',
+    icon: Blend,
+    href: '/subjects/synthesis/chat',
+    lessons: [
+        { id: 'syn-1-1', title: 'Creative Problem Solving', completed: false },
+        { id: 'syn-1-2', title: 'Project-Based Learning Kickstart', completed: false },
+    ],
+  },
   {
     id: 'maths-applied',
     name: 'Maths (Applied)',
