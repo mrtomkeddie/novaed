@@ -106,24 +106,10 @@ export function Timetable() {
                                 const lookupKey = period.toLowerCase().trim();
                                 const colorValue = colorMap[lookupKey];
                                 const style: React.CSSProperties = colorValue ? { color: colorValue } : {};
-
-                                const match = period.match(/(.+) \((.+)\)/);
-                                let mainText = period;
-                                let subText: string | null = null;
-
-                                if (match) {
-                                    mainText = match[1].trim();
-                                    subText = `(${match[2].trim()})`;
-                                }
                                 
                                 return (
-                                    <TableCell key={periodIndex} className="text-center">
-                                         <div className="font-semibold" style={style}>
-                                            {mainText}
-                                            {subText && (
-                                                <span className="mt-1 block font-normal text-muted-foreground text-xs">{subText}</span>
-                                            )}
-                                        </div>
+                                    <TableCell key={periodIndex} className="text-center font-semibold" style={style}>
+                                        {period}
                                     </TableCell>
                                 )
                           })}
