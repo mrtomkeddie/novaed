@@ -157,13 +157,13 @@ export function DashboardClient() {
                     </CardHeader>
                     <CardContent>
                          <div className="flex flex-col sm:flex-row gap-4">
-                             <Button asChild size="lg" className="w-full bg-btn-gradient text-accent-foreground hover:opacity-90 text-lg py-6">
+                             <Button asChild size="lg" className="w-full bg-btn-gradient text-accent-foreground hover:opacity-90 py-6">
                                 <Link href={`/subjects/${currentLesson.subject.id}/chat`}>
                                     Start Lesson
                                     <ArrowRight className="ml-2"/>
                                 </Link>
                             </Button>
-                            <Button size="lg" variant="outline" onClick={handleSkip} className="w-full text-lg py-6">
+                            <Button size="lg" variant="outline" onClick={handleSkip} className="w-full py-6">
                                 <SkipForward className="mr-2"/>
                                 Skip Lesson
                             </Button>
@@ -197,9 +197,9 @@ export function DashboardClient() {
                       </Button>
                   </DialogTrigger>
                   <DialogContent className="max-w-[95vw] sm:max-w-5xl">
-                      <DialogHeader className="flex-row items-center justify-between">
+                      <DialogHeader className="flex-row items-center">
                           <DialogTitle>Weekly Timetable</DialogTitle>
-                           <div className="flex items-center justify-end gap-2">
+                           <div className="flex items-center gap-2 ml-auto">
                                 <Button
                                     variant={selectedWeek === 1 ? 'default' : 'outline'}
                                     size="sm"
