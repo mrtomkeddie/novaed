@@ -65,24 +65,21 @@ export function Timetable() {
 
     return (
         <div className="w-full">
-            <div className="flex items-center gap-4 mb-4">
-                <h3 className="text-lg font-semibold">Weekly Timetable</h3>
-                <div className="flex items-center gap-2">
+            <div className="flex items-center justify-end gap-2 mb-4">
+                <Button
+                    variant={selectedWeek === 1 ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setSelectedWeek(1)}
+                >
+                    Week 1
+                </Button>
                     <Button
-                        variant={selectedWeek === 1 ? 'default' : 'outline'}
-                        size="sm"
-                        onClick={() => setSelectedWeek(1)}
-                    >
-                        Week 1
-                    </Button>
-                     <Button
-                        variant={selectedWeek === 2 ? 'default' : 'outline'}
-                        size="sm"
-                        onClick={() => setSelectedWeek(2)}
-                    >
-                        Week 2
-                    </Button>
-                </div>
+                    variant={selectedWeek === 2 ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setSelectedWeek(2)}
+                >
+                    Week 2
+                </Button>
             </div>
           <Table>
               <TableHeader>
