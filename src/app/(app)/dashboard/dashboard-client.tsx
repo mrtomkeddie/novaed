@@ -191,7 +191,7 @@ export function DashboardClient() {
                           View Full Timetable
                       </Button>
                   </DialogTrigger>
-                  <DialogContent className="w-auto max-w-[95vw] sm:max-w-2xl">
+                  <DialogContent className="w-auto max-w-[95vw] sm:max-w-4xl">
                       <DialogHeader>
                           <DialogTitle>Weekly Timetable</DialogTitle>
                       </DialogHeader>
