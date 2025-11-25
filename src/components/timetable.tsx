@@ -1,7 +1,6 @@
-
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import {
   Table,
   TableBody,
@@ -10,7 +9,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Button } from './ui/button';
 import { cn } from '@/lib/utils';
 
 type TimetableData = {
@@ -58,29 +56,15 @@ export const colorMap: { [key: string]: string } = {
 
 const lessonTimes = ['9:30 - 9:55 AM', '10:00 - 10:25 AM', '10:30 - 10:55 AM'];
 
-export function Timetable() {
-    const [selectedWeek, setSelectedWeek] = useState(1);
-    
+interface TimetableProps {
+    selectedWeek: number;
+}
+
+export function Timetable({ selectedWeek }: TimetableProps) {
     const weekData = timetableData.find(w => w.week === selectedWeek);
 
     return (
         <div className="w-full">
-            <div className="flex items-center justify-end gap-2 mb-4">
-                <Button
-                    variant={selectedWeek === 1 ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => setSelectedWeek(1)}
-                >
-                    Week 1
-                </Button>
-                    <Button
-                    variant={selectedWeek === 2 ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => setSelectedWeek(2)}
-                >
-                    Week 2
-                </Button>
-            </div>
           <Table>
               <TableHeader>
                   <TableRow>

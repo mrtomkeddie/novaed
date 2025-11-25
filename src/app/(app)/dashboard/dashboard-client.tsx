@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -27,6 +26,7 @@ export function DashboardClient() {
   const welcomeName = 'Charlie'; // Hardcoded user name
   const [isLoading, setIsLoading] = useState(true); // Only for lesson loading
   const { toast } = useToast();
+  const [selectedWeek, setSelectedWeek] = useState(1);
 
   useEffect(() => {
     setIsLoading(true);
@@ -197,10 +197,26 @@ export function DashboardClient() {
                       </Button>
                   </DialogTrigger>
                   <DialogContent className="max-w-[95vw] sm:max-w-5xl">
-                      <DialogHeader>
+                      <DialogHeader className="flex-row items-center justify-between">
                           <DialogTitle>Weekly Timetable</DialogTitle>
+                           <div className="flex items-center justify-end gap-2">
+                                <Button
+                                    variant={selectedWeek === 1 ? 'default' : 'outline'}
+                                    size="sm"
+                                    onClick={() => setSelectedWeek(1)}
+                                >
+                                    Week 1
+                                </Button>
+                                <Button
+                                    variant={selectedWeek === 2 ? 'default' : 'outline'}
+                                    size="sm"
+                                    onClick={() => setSelectedWeek(2)}
+                                >
+                                    Week 2
+                                </Button>
+                            </div>
                       </DialogHeader>
-                      <Timetable />
+                      <Timetable selectedWeek={selectedWeek} />
                   </DialogContent>
               </Dialog>
               {currentLessonIndex > 0 && (
