@@ -19,10 +19,10 @@ import { subjects as staticSubjects } from '@/data/subjects';
 
 export function CurriculumClient() {
   // We no longer fetch progress, so we can use the static subjects directly.
-  const [subjects] = useState<Subject[]>(staticSubjects);
+  const [subjects] = useState<Subject[]>(staticSubjects.filter(s => !s.isExternal));
   const [isLoading, setIsLoading] = useState(false); // Kept for future use, but not essential now
   const [selectedSubjectId, setSelectedSubjectId] = useState<string>(
-    staticSubjects[0]?.id || ''
+    subjects[0]?.id || ''
   );
 
   const selectedSubject = subjects.find((s) => s.id === selectedSubjectId);

@@ -97,6 +97,32 @@ export function DashboardClient() {
   const currentLesson = todaysLessons[currentLessonIndex];
   const allLessonsDone = todaysLessons.length > 0 && currentLessonIndex >= todaysLessons.length;
 
+  const renderStartButton = () => {
+    if (!currentLesson || !currentLesson.subject) return null;
+
+    if (currentLesson.subject.isExternal) {
+        return (
+            <a 
+                href={currentLesson.subject.href} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="w-full bg-btn-gradient text-accent-foreground hover:opacity-90 py-6 inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-semibold ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-11 px-8"
+            >
+                Start Lesson <ArrowRight className="ml-2"/>
+            </a>
+        );
+    }
+
+    return (
+        <Button asChild size="lg" className="w-full bg-btn-gradient text-accent-foreground hover:opacity-90 py-6">
+            <Link href={`/subjects/${currentLesson.subject.id}/chat`}>
+                Start Lesson
+                <ArrowRight className="ml-2"/>
+            </Link>
+        </Button>
+    );
+  }
+
   return (
     <div className="flex flex-col min-h-screen">
       <AppHeader />
@@ -158,12 +184,7 @@ export function DashboardClient() {
                     </CardHeader>
                     <CardContent>
                          <div className="flex flex-col sm:flex-row gap-4">
-                             <Button asChild size="lg" className="w-full bg-btn-gradient text-accent-foreground hover:opacity-90 py-6">
-                                <Link href={`/subjects/${currentLesson.subject.id}/chat`}>
-                                    Start Lesson
-                                    <ArrowRight className="ml-2"/>
-                                </Link>
-                            </Button>
+                             {renderStartButton()}
                             <Button size="lg" variant="outline" onClick={handleSkip} className="w-full py-6">
                                 <SkipForward className="mr-2"/>
                                 Skip Lesson
@@ -199,7 +220,7 @@ export function DashboardClient() {
                   </DialogTrigger>
                   <DialogContent className="max-w-[95vw] sm:max-w-5xl">
                       <DialogHeader>
-                        <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-4 justify-between">
                           <DialogTitle>Weekly Timetable</DialogTitle>
                            <div className="flex items-center gap-2">
                                 <Button

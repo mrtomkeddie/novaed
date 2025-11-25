@@ -18,7 +18,8 @@ export const subjects: Subject[] = [
     name: 'Synthesis',
     description: 'Combine ideas from different subjects in creative ways.',
     icon: Blend,
-    href: '/subjects/synthesis/chat',
+    href: 'https://tutor.synthesis.com/',
+    isExternal: true, // Add a flag to identify external links
     lessons: [
         { id: 'syn-1-1', title: 'Creative Problem Solving', stage: 'Foundation', completed: false },
         { id: 'syn-1-2', title: 'Project-Based Learning Kickstart', stage: 'Foundation', completed: false },

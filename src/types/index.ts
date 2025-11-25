@@ -22,6 +22,7 @@ export type Subject = {
   icon: Icon;
   href: string;
   lessons: Lesson[];
+  isExternal?: boolean;
 };
 
 export type UserProfile = {

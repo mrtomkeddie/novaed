@@ -4,6 +4,8 @@ import { SubjectCard } from "@/components/subject-card";
 import { subjects } from "@/data/subjects";
 
 export default function FreePlayPage() {
+  const availableSubjects = subjects.filter(subject => !subject.isExternal);
+
   return (
     <div className="flex flex-col min-h-screen">
       <AppHeader />
@@ -19,7 +21,7 @@ export default function FreePlayPage() {
           </section>
 
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {subjects.map((subject) => (
+            {availableSubjects.map((subject) => (
               <SubjectCard key={subject.id} subject={subject} />
             ))}
           </div>
