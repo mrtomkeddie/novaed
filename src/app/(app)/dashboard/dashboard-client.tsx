@@ -218,7 +218,7 @@ export function DashboardClient() {
                   </DialogTrigger>
                   <DialogContent className="max-w-[95vw] sm:max-w-5xl">
                       <DialogHeader>
-                        <div className="flex items-center gap-4 justify-between">
+                        <div className="flex items-center gap-4 justify-start">
                           <DialogTitle>Weekly Timetable</DialogTitle>
                            <div className="flex items-center gap-2">
                                 <Button
