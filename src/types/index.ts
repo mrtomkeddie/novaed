@@ -7,6 +7,8 @@ type Icon = ForwardRefExoticComponent<Omit<LucideProps, "ref"> & RefAttributes<S
 export type Lesson = {
   id: string;
   title: string;
+  description?: string; // Added description
+  stage: 'Foundation' | 'Development' | 'Mastery'; // Added stage
   content?: string;
   completed: boolean;
   isRecap?: boolean;

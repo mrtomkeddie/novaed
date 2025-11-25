@@ -1,3 +1,4 @@
+
 'use client';
 
 import type { Lesson } from '@/types';
@@ -9,74 +10,57 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { CheckCircle, Circle, MapPin } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { FileText } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import {
-    Tooltip,
-    TooltipContent,
-    TooltipTrigger,
-} from '@/components/ui/tooltip';
 
 interface CurriculumMapProps {
   lessons: Lesson[];
 }
 
 export function CurriculumMap({ lessons }: CurriculumMapProps) {
-  const lastCompletedIndex = lessons.findLastIndex(lesson => lesson.completed);
-  const currentIndex = lastCompletedIndex + 1; // This will be 0 if none are completed.
+  
+  const getStageVariant = (stage: Lesson['stage']) => {
+    switch (stage) {
+      case 'Foundation':
+        return 'default';
+      case 'Development':
+        return 'secondary';
+      case 'Mastery':
+        return 'destructive'; // This will likely need a new variant color
+      default:
+        return 'outline';
+    }
+  }
 
   return (
     <div className="border rounded-lg overflow-hidden">
         <Table>
             <TableHeader>
                 <TableRow>
-                    <TableHead className="w-[80px] text-center">Status</TableHead>
+                    <TableHead className="w-[120px]">Stage</TableHead>
                     <TableHead>Topic</TableHead>
                     <TableHead className="hidden md:table-cell">Description</TableHead>
                 </TableRow>
             </TableHeader>
             <TableBody>
-                {lessons.map((lesson, index) => {
-                    const isCompleted = index < currentIndex;
-                    const isCurrent = index === currentIndex && currentIndex < lessons.length;
+                {lessons.map((lesson) => {
+                    const isCompleted = lesson.completed;
                     
-                    const title = lesson.title;
-                    const colonIndex = title.indexOf(':');
-                    const topic = colonIndex !== -1 ? title.substring(0, colonIndex).trim() : title.trim();
-                    const description = colonIndex !== -1 ? title.substring(colonIndex + 1).trim() : '';
-                    
-                    let statusIcon: React.ReactNode;
-                    let statusText: string;
-
-                    if (isCurrent) {
-                        statusIcon = <MapPin className="h-5 w-5 text-accent animate-pulse" />;
-                        statusText = "Current";
-                    } else if (isCompleted) {
-                        statusIcon = <CheckCircle className="h-5 w-5 text-green-500" />;
-                        statusText = "Completed";
-                    } else {
-                        statusIcon = <Circle className="h-5 w-5 text-muted-foreground/30" />;
-                        statusText = "Upcoming";
-                    }
-
                     return (
-                        <TableRow key={lesson.id} className={cn(isCurrent && "bg-secondary")}>
-                            <TableCell className="text-center">
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <div className="flex justify-center">{statusIcon}</div>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                        <p>{statusText}</p>
-                                    </TooltipContent>
-                                </Tooltip>
+                        <TableRow key={lesson.id} className={cn(isCompleted && "bg-secondary/30")}>
+                            <TableCell>
+                                <Badge variant={getStageVariant(lesson.stage)}>{lesson.stage}</Badge>
                             </TableCell>
                             <TableCell>
-                                <p className={cn("font-semibold", !isCompleted && !isCurrent && "text-muted-foreground")}>{topic}</p>
-                                {description && <p className="text-sm text-muted-foreground md:hidden mt-1">{description}</p>}
+                                <div className="flex items-center gap-2">
+                                  <FileText className="w-4 h-4 text-muted-foreground shrink-0" />
+                                  <p className={cn("font-medium", isCompleted && "text-muted-foreground line-through")}>{lesson.title}</p>
+                                </div>
+                                {lesson.description && <p className="text-sm text-muted-foreground md:hidden mt-2">{lesson.description}</p>}
                             </TableCell>
                             <TableCell className="hidden md:table-cell text-muted-foreground">
-                                {description}
+                                {lesson.description}
                             </TableCell>
                         </TableRow>
                     );
