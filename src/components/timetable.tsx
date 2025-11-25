@@ -45,7 +45,7 @@ export const colorMap: { [key: string]: string } = {
 };
 
 export function Timetable() {
-    // Find the maximum number of periods in any day to determine the number of rows.
+    // Find the maximum number of periods in any day to determine the number of columns.
     const maxPeriods = Math.max(...timetableData.map(d => d.periods.length));
 
     return (
@@ -53,47 +53,49 @@ export function Timetable() {
           <Table>
               <TableHeader>
                   <TableRow>
-                      <TableHead className="w-[100px] text-muted-foreground">Lesson</TableHead>
-                      {timetableData.map((dayData) => (
-                          <TableHead key={dayData.day} className="text-center">{dayData.day}</TableHead>
+                      <TableHead className="w-[120px]">Day</TableHead>
+                      {Array.from({ length: maxPeriods }).map((_, periodIndex) => (
+                          <TableHead key={periodIndex} className="text-center">
+                              Lesson {periodIndex + 1}
+                          </TableHead>
                       ))}
                   </TableRow>
               </TableHeader>
               <TableBody>
-                  {Array.from({ length: maxPeriods }).map((_, periodIndex) => (
-                      <TableRow key={periodIndex}>
-                          <TableCell className="font-medium text-muted-foreground text-center">
-                              {periodIndex + 1}
+                  {timetableData.map((dayData) => (
+                      <TableRow key={dayData.day}>
+                          <TableCell className="font-medium text-muted-foreground">
+                              {dayData.day}
                           </TableCell>
-                          {timetableData.map((dayData) => {
-                              const period = dayData.periods[periodIndex];
-                              if (!period) {
-                                  return <TableCell key={dayData.day}></TableCell>; // Empty cell if no lesson
-                              }
+                          {Array.from({ length: maxPeriods }).map((_, periodIndex) => {
+                                const period = dayData.periods[periodIndex];
+                                if (!period) {
+                                    return <TableCell key={periodIndex}></TableCell>; // Empty cell if no lesson
+                                }
 
-                              const lookupKey = period.toLowerCase().trim();
-                              const colorValue = colorMap[lookupKey];
-                              const style: React.CSSProperties = colorValue ? { color: colorValue } : {};
+                                const lookupKey = period.toLowerCase().trim();
+                                const colorValue = colorMap[lookupKey];
+                                const style: React.CSSProperties = colorValue ? { color: colorValue } : {};
 
-                              const match = period.match(/(.+) \((.+)\)/);
-                              let mainText = period;
-                              let subText: string | null = null;
+                                const match = period.match(/(.+) \((.+)\)/);
+                                let mainText = period;
+                                let subText: string | null = null;
 
-                              if (match) {
-                                  mainText = match[1].trim();
-                                  subText = `(${match[2].trim()})`;
-                              }
-
-                              return (
-                                  <TableCell key={dayData.day} className="text-center">
-                                      <div className="font-semibold" style={style}>
-                                          {mainText}
-                                          {subText && (
-                                              <span className="mt-1 block font-normal text-muted-foreground text-xs">{subText}</span>
-                                          )}
-                                      </div>
-                                  </TableCell>
-                              );
+                                if (match) {
+                                    mainText = match[1].trim();
+                                    subText = `(${match[2].trim()})`;
+                                }
+                                
+                                return (
+                                    <TableCell key={periodIndex} className="text-center">
+                                         <div className="font-semibold" style={style}>
+                                            {mainText}
+                                            {subText && (
+                                                <span className="mt-1 block font-normal text-muted-foreground text-xs">{subText}</span>
+                                            )}
+                                        </div>
+                                    </TableCell>
+                                )
                           })}
                       </TableRow>
                   ))}
