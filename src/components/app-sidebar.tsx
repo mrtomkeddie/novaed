@@ -22,8 +22,8 @@ export function AppSidebar() {
 
   return (
     <aside className="w-64 flex-shrink-0 border-r bg-card text-card-foreground">
-        <div className="flex flex-col h-full">
-            <div className="border-b p-4 h-20 flex items-center">
+        <div className="flex flex-col h-screen">
+            <div className="border-b p-4 h-20 flex items-center flex-shrink-0">
                 <Link href="/dashboard" className="flex items-center gap-2">
                     <Image
                     src="/logo.png"
@@ -34,7 +34,7 @@ export function AppSidebar() {
                     />
                 </Link>
             </div>
-            <nav className="flex flex-col gap-2 p-4 flex-grow">
+            <nav className="flex flex-col gap-2 p-4 flex-grow overflow-y-auto">
             {navLinks.map((link) => {
                 const isActive = link.exact ? pathname === link.href : pathname.startsWith(link.href);
                 return (
@@ -52,7 +52,7 @@ export function AppSidebar() {
                 );
             })}
             </nav>
-            <div className="p-4 border-t">
+            <div className="p-4 border-t flex-shrink-0">
             <Button variant="outline" className="w-full text-base py-6" asChild>
                 <Link href="/">Sign Out</Link>
             </Button>
