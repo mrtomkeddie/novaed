@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { subjects } from '@/data/subjects';
 import type { GenerateLessonSummaryOutput } from '@/ai/flows/generate-lesson-summary';
-import { Loader2, Award, BookOpen, BrainCircuit, Calendar, Check, X, Trophy } from 'lucide-react';
+import { Loader2, Award, BookOpen, BrainCircuit, Calendar, Check, X } from 'lucide-react';
 import {
     Select,
     SelectContent,
@@ -65,8 +65,6 @@ export function ProgressClient() {
     }
   }, [progressData]);
 
-  const totalXp = progressData.reduce((acc, summary) => acc + summary.xp_earned, 0);
-
   const filteredProgressData = progressData.filter(summary =>
     selectedSubject === 'all' || summary.subject === selectedSubject
   );
@@ -83,7 +81,7 @@ export function ProgressClient() {
       <main className="flex-1">
         <div className="container mx-auto px-4 py-8 md:py-12">
           <section className="mb-10">
-            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                     <h1 className="text-4xl font-bold font-headline tracking-tight">
                         Your Progress Report
@@ -92,7 +90,7 @@ export function ProgressClient() {
                         A summary of all your learning achievements.
                     </p>
                 </div>
-                <div className="flex flex-col sm:flex-row items-center gap-4 shrink-0">
+                <div className="flex items-center gap-4 shrink-0">
                     <Select value={selectedSubject} onValueChange={setSelectedSubject} disabled={availableSubjects.length === 0}>
                         <SelectTrigger className="w-full sm:w-[240px]">
                             <SelectValue placeholder="Filter by subject..." />
@@ -106,15 +104,6 @@ export function ProgressClient() {
                             ))}
                         </SelectContent>
                     </Select>
-                    <Card className="shrink-0 w-full sm:w-auto">
-                        <CardHeader className="p-4 flex-row items-center gap-4 space-y-0">
-                            <Trophy className="w-10 h-10 text-yellow-500" />
-                            <div>
-                                <CardDescription>Total XP Earned</CardDescription>
-                                <CardTitle className="text-2xl">{totalXp.toLocaleString()}</CardTitle>
-                            </div>
-                        </CardHeader>
-                    </Card>
                 </div>
             </div>
           </section>

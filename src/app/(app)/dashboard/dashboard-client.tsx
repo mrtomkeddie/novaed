@@ -9,9 +9,12 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Timetable } from '@/components/timetable';
-import { ArrowRight, Gamepad2, SkipForward, CalendarDays, CheckCircle, RefreshCw, Loader2 } from 'lucide-react';
-import type { Subject } from '@/types';
+import { ArrowRight, Gamepad2, SkipForward, CalendarDays, CheckCircle, RefreshCw, Loader2, Trophy } from 'lucide-react';
+import type { Subject, UserProfile } from '@/types';
 import { useToast } from '@/hooks/use-toast';
+import type { GenerateLessonSummaryOutput } from '@/ai/flows/generate-lesson-summary';
+
+const userId = 'charlie';
 
 type DailyLesson = {
     subjectName: string;
@@ -23,13 +26,47 @@ export function DashboardClient() {
   const [todaysLessons, setTodaysLessons] = useState<DailyLesson[]>([]);
   const [currentLessonIndex, setCurrentLessonIndex] = useState(0);
   const [greeting, setGreeting] = useState("Welcome");
-  const welcomeName = 'Charlie'; // Hardcoded user name
-  const [isLoading, setIsLoading] = useState(true); // Only for lesson loading
+  const [welcomeName, setWelcomeName] = useState('...');
+  const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
   const [selectedWeek, setSelectedWeek] = useState(1);
+  const [totalXp, setTotalXp] = useState(0);
+  const [isLoadingProfile, setIsLoadingProfile] = useState(true);
 
   useEffect(() => {
     setIsLoading(true);
+    
+    async function fetchProfileAndProgress() {
+        try {
+            const profileRes = await fetch('/api/get-user-profile', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId }),
+            });
+            if (profileRes.ok) {
+                const profile: UserProfile = await profileRes.json();
+                setWelcomeName(profile.displayName);
+            }
+
+            const progressRes = await fetch('/api/get-all-user-progress', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId }),
+            });
+            if(progressRes.ok) {
+                const progress: GenerateLessonSummaryOutput[] = await progressRes.json();
+                const total = progress.reduce((acc, summary) => acc + summary.xp_earned, 0);
+                setTotalXp(total);
+            }
+        } catch (error) {
+            console.error('Failed to fetch initial data', error);
+        } finally {
+            setIsLoadingProfile(false);
+        }
+    }
+
+    fetchProfileAndProgress();
+
     // Determine today's lessons from timetable
     const today = new Date().toLocaleDateString('en-US', { weekday: 'long' });
     
@@ -63,7 +100,6 @@ export function DashboardClient() {
             }
         } catch (e) {
             localStorage.setItem('dailyProgress', JSON.stringify({ date: todayStr, index: 0 }));
-            setCurrentLessonIndex(0);
         }
     } else {
         localStorage.setItem('dailyProgress', JSON.stringify({ date: todayStr, index: 0 }));
@@ -126,25 +162,38 @@ export function DashboardClient() {
     <div className="flex flex-col min-h-screen">
       <main className="flex-1">
         <div className="container mx-auto px-4 py-8 md:py-12">
-          <section className="text-center mb-10">
-            {isLoading ? (
-                <div className="flex items-center justify-center h-14">
-                    <Loader2 className="h-8 w-8 animate-spin" />
-                </div>
-            ) : (
-                <>
-                <h1 className="text-4xl font-bold font-headline tracking-tight sm:text-5xl capitalize">
-                    {greeting}, {welcomeName}!
-                </h1>
-                <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
+          <section className="mb-10">
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                <div>
+                {isLoadingProfile ? (
+                    <div className="h-14 w-96 bg-muted/50 rounded-md animate-pulse" />
+                ) : (
+                    <h1 className="text-4xl font-bold font-headline tracking-tight sm:text-5xl capitalize">
+                        {greeting}, {welcomeName}!
+                    </h1>
+                )}
+                <p className="mt-4 text-lg text-muted-foreground max-w-2xl">
                     {allLessonsDone ? "You've completed your missions for today!" : "Here is your next lesson for today. Let's get started!"}
                 </p>
-                </>
-            )}
+                </div>
+                <Card className="shrink-0 w-full sm:w-auto">
+                    <CardHeader className="p-4 flex-row items-center gap-4 space-y-0">
+                        <Trophy className="w-10 h-10 text-yellow-500" />
+                        <div>
+                            <CardDescription>Total XP Earned</CardDescription>
+                            <CardTitle className="text-2xl">{totalXp.toLocaleString()}</CardTitle>
+                        </div>
+                    </CardHeader>
+                </Card>
+            </div>
           </section>
 
           <section className="max-w-2xl mx-auto mb-10">
-            {allLessonsDone ? (
+            {isLoading ? (
+                 <div className="flex items-center justify-center h-14">
+                    <Loader2 className="h-8 w-8 animate-spin" />
+                </div>
+            ) : allLessonsDone ? (
                 <Card className="text-center bg-gradient-to-br from-card to-secondary/50">
                     <CardHeader>
                         <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/50">

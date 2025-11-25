@@ -46,7 +46,6 @@ const saveUserProfileFlow = ai.defineFlow(
     async () => {
         // This function no longer does anything, as the profile is hardcoded.
         console.log("Profile saving is disabled.");
-        return;
     }
 );
 

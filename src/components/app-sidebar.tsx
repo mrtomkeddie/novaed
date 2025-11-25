@@ -20,7 +20,7 @@ export function AppSidebar() {
   ];
 
   return (
-    <aside className="w-64 flex-shrink-0 bg-card text-card-foreground flex flex-col h-screen">
+    <aside className="w-64 bg-card text-card-foreground flex flex-col h-screen flex-shrink-0">
         <div className="border-b p-4 h-20 flex items-center flex-shrink-0">
             <Link href="/dashboard" className="flex items-center gap-2">
                 <Image
