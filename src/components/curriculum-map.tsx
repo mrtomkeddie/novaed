@@ -11,7 +11,6 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { FileText } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface CurriculumMapProps {
@@ -54,7 +53,6 @@ export function CurriculumMap({ lessons }: CurriculumMapProps) {
                             </TableCell>
                             <TableCell>
                                 <div className="flex items-center gap-2">
-                                  <FileText className="w-4 h-4 text-muted-foreground shrink-0" />
                                   <p className={cn("font-medium", isCompleted && "text-muted-foreground line-through")}>{lesson.title}</p>
                                 </div>
                                 {lesson.description && <p className="text-sm text-muted-foreground md:hidden mt-2">{lesson.description}</p>}
