@@ -9,13 +9,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 
 // The timetable data is now hardcoded here for simplicity and reliability.
 export const timetableData = [
@@ -52,75 +45,60 @@ export const colorMap: { [key: string]: string } = {
 };
 
 export function Timetable() {
-    const [selectedDay, setSelectedDay] = React.useState('Monday');
-    
-    React.useEffect(() => {
-      const today = new Date().toLocaleDateString('en-US', { weekday: 'long' });
-      const validDays = timetableData.map(d => d.day);
-      if (validDays.includes(today)) {
-        setSelectedDay(today);
-      }
-    }, []);
-
-    const daySchedule = timetableData.find(d => d.day === selectedDay);
+    // Find the maximum number of periods in any day to determine the number of rows.
+    const maxPeriods = Math.max(...timetableData.map(d => d.periods.length));
 
     return (
         <div className="w-full">
-            <div className="flex justify-center mt-4 mb-2">
-              <Select value={selectedDay} onValueChange={setSelectedDay}>
-                <SelectTrigger className="w-[280px]">
-                  <SelectValue placeholder="Select a day" />
-                </SelectTrigger>
-                <SelectContent>
-                  {timetableData.map((dayData) => (
-                    <SelectItem key={dayData.day} value={dayData.day}>
-                      {dayData.day}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+          <Table>
+              <TableHeader>
+                  <TableRow>
+                      <TableHead className="w-[100px] text-muted-foreground">Lesson</TableHead>
+                      {timetableData.map((dayData) => (
+                          <TableHead key={dayData.day} className="text-center">{dayData.day}</TableHead>
+                      ))}
+                  </TableRow>
+              </TableHeader>
+              <TableBody>
+                  {Array.from({ length: maxPeriods }).map((_, periodIndex) => (
+                      <TableRow key={periodIndex}>
+                          <TableCell className="font-medium text-muted-foreground text-center">
+                              {periodIndex + 1}
+                          </TableCell>
+                          {timetableData.map((dayData) => {
+                              const period = dayData.periods[periodIndex];
+                              if (!period) {
+                                  return <TableCell key={dayData.day}></TableCell>; // Empty cell if no lesson
+                              }
 
-            {daySchedule && (
-              <Table>
-                  <TableHeader>
-                      <TableRow>
-                          <TableHead className="w-[100px]">Lesson</TableHead>
-                          <TableHead>Subject</TableHead>
-                      </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                      {daySchedule.periods.map((period, index) => {
-                          const lookupKey = period.toLowerCase().trim();
-                          const colorValue = colorMap[lookupKey];
-                          const style: React.CSSProperties = colorValue ? { color: colorValue, fontWeight: 600 } : {};
+                              const lookupKey = period.toLowerCase().trim();
+                              const colorValue = colorMap[lookupKey];
+                              const style: React.CSSProperties = colorValue ? { color: colorValue } : {};
 
-                          const match = period.match(/(.+) \((.+)\)/);
-                          let mainText = period;
-                          let subText: string | null = null;
+                              const match = period.match(/(.+) \((.+)\)/);
+                              let mainText = period;
+                              let subText: string | null = null;
 
-                          if (match) {
-                              mainText = match[1].trim();
-                              subText = `(${match[2].trim()})`;
-                          }
+                              if (match) {
+                                  mainText = match[1].trim();
+                                  subText = `(${match[2].trim()})`;
+                              }
 
-                          return (
-                              <TableRow key={index}>
-                                  <TableCell className="font-medium text-muted-foreground">Lesson {index + 1}</TableCell>
-                                  <TableCell>
-                                       <div className="font-semibold" style={style}>
+                              return (
+                                  <TableCell key={dayData.day} className="text-center">
+                                      <div className="font-semibold" style={style}>
                                           {mainText}
                                           {subText && (
                                               <span className="mt-1 block font-normal text-muted-foreground text-xs">{subText}</span>
                                           )}
                                       </div>
                                   </TableCell>
-                              </TableRow>
-                          );
-                      })}
-                  </TableBody>
-              </Table>
-            )}
+                              );
+                          })}
+                      </TableRow>
+                  ))}
+              </TableBody>
+          </Table>
         </div>
     );
 }
