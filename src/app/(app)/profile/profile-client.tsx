@@ -1,7 +1,7 @@
+
 'use client';
 
 import { useState } from 'react';
-import { AppHeader } from '@/components/app-header';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -23,7 +23,6 @@ export function ProfileClient() {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <AppHeader />
       <main className="flex-1">
         <div className="container mx-auto px-4 py-8 md:py-12">
           <section className="max-w-xl mx-auto">

@@ -1,8 +1,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
-import { AppHeader } from '@/components/app-header';
+import { useState } from 'react';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import {
   Select,
@@ -29,7 +28,6 @@ export function CurriculumClient() {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <AppHeader />
       <main className="flex-1">
         <div className="container mx-auto px-4 py-8 md:py-12">
           <section className="text-center mb-8">

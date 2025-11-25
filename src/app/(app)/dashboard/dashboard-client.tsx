@@ -3,7 +3,6 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { AppHeader } from "@/components/app-header";
 import { subjects } from "@/data/subjects";
 import { timetableData } from "@/components/timetable";
 import { Button } from '@/components/ui/button';
@@ -125,7 +124,6 @@ export function DashboardClient() {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <AppHeader />
       <main className="flex-1">
         <div className="container mx-auto px-4 py-8 md:py-12">
           <section className="text-center mb-10">

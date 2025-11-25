@@ -1,10 +1,15 @@
 
+import { AppSidebar } from '@/components/app-sidebar';
 
-// This layout no longer needs to check for authentication.
 export default function AppLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  return <>{children}</>;
+  return (
+    <div className="flex min-h-screen">
+      <AppSidebar />
+      <main className="flex-1 w-full">{children}</main>
+    </div>
+  );
 }

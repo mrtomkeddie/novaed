@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
@@ -357,28 +358,19 @@ export default function ChatPage() {
       </Dialog>
       <div className="flex h-screen bg-background">
         <div className="flex flex-col flex-1 min-w-0">
-            <header className="relative flex items-center justify-between p-3 border-b bg-card h-20 sm:h-16">
-                <div className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2">
-                    <Button asChild variant="ghost" size="icon" className="shrink-0">
-                    <Link href="/dashboard">
-                        <ArrowLeft />
-                        <span className="sr-only">Back to Dashboard</span>
-                    </Link>
-                    </Button>
-                </div>
-
-                <div className="text-center px-14 sm:px-16 flex-1 flex flex-col items-center justify-center">
-                    <h1 className="text-base sm:text-lg font-bold font-headline text-foreground truncate w-full">
+            <header className="relative flex items-center justify-between p-3 border-b bg-card h-20">
+                <div className="text-center px-4 flex-1 flex flex-col items-center justify-center">
+                    <h1 className="text-lg font-bold font-headline text-foreground truncate w-full">
                     {currentTopic?.title || subject.name}
                     </h1>
-                    <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground mt-1">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
                         <span>{subject.name}</span>
-                        <span className="hidden sm:inline mx-1">•</span>
+                        <span className="mx-1">•</span>
                         <span>{lessonPhase}</span>
                     </div>
                 </div>
                 
-                <div className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
                     <div className="flex items-center gap-2 rounded-md bg-secondary px-3 py-1.5 font-mono text-secondary-foreground">
                         <TimerIcon className="w-5 h-5 text-primary" />
                         <span className="text-lg font-semibold">{formatTime(timeRemaining)}</span>
@@ -395,7 +387,7 @@ export default function ChatPage() {
                     </div>
                     <AlertDialog>
                     <AlertDialogTrigger asChild>
-                        <Button variant="outline" disabled={isLogging || isNovaTyping} className="hidden sm:flex">
+                        <Button variant="outline" disabled={isLogging || isNovaTyping}>
                         {isLogging ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                         End Lesson
                         </Button>
