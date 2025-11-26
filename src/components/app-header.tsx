@@ -23,18 +23,15 @@ export function AppHeader() {
         </Link>
         <Sheet>
           <SheetTrigger asChild>
-            <Button variant="outline" size="icon" className="md:hidden">
+            <Button variant="outline" size="icon">
               <Menu className="h-6 w-6" />
               <span className="sr-only">Open menu</span>
             </Button>
           </SheetTrigger>
-          <SheetContent side="left" className="p-0">
+          <SheetContent side="right" className="p-0">
             <AppSidebar isDrawer={true} />
           </SheetContent>
         </Sheet>
-        <div className="hidden md:block">
-            {/* You can add desktop-specific header items here if needed */}
-        </div>
       </div>
     </header>
   );

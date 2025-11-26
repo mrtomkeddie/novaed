@@ -29,8 +29,8 @@ export function AppSidebar({ isDrawer = false }: AppSidebarProps) {
 
   return (
     <aside className={cn(
-      "text-card-foreground flex flex-col h-screen flex-shrink-0",
-      !isDrawer && "w-64 bg-card"
+      "text-card-foreground flex flex-col h-screen",
+      isDrawer ? 'w-full' : "w-64 bg-card"
     )}>
         <div className="border-b p-4 h-20 flex items-center flex-shrink-0">
             <Link href="/dashboard" className="flex items-center gap-2">
