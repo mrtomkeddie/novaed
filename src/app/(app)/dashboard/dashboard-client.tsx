@@ -9,10 +9,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Timetable } from '@/components/timetable';
-import { ArrowRight, Gamepad2, SkipForward, CalendarDays, CheckCircle, RefreshCw, Loader2, Trophy } from 'lucide-react';
+import { ArrowRight, Gamepad2, SkipForward, CalendarDays, CheckCircle, RefreshCw, Loader2 } from 'lucide-react';
 import type { Subject, UserProfile } from '@/types';
 import { useToast } from '@/hooks/use-toast';
-import type { GenerateLessonSummaryOutput } from '@/ai/flows/generate-lesson-summary';
 
 const userId = 'charlie';
 
@@ -30,13 +29,12 @@ export function DashboardClient() {
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
   const [selectedWeek, setSelectedWeek] = useState(1);
-  const [totalXp, setTotalXp] = useState(0);
   const [isLoadingProfile, setIsLoadingProfile] = useState(true);
 
   useEffect(() => {
     setIsLoading(true);
     
-    async function fetchProfileAndProgress() {
+    async function fetchProfile() {
         try {
             const profileRes = await fetch('/api/get-user-profile', {
                 method: 'POST',
@@ -47,25 +45,14 @@ export function DashboardClient() {
                 const profile: UserProfile = await profileRes.json();
                 setWelcomeName(profile.displayName);
             }
-
-            const progressRes = await fetch('/api/get-all-user-progress', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId }),
-            });
-            if(progressRes.ok) {
-                const progress: GenerateLessonSummaryOutput[] = await progressRes.json();
-                const total = progress.reduce((acc, summary) => acc + summary.xp_earned, 0);
-                setTotalXp(total);
-            }
         } catch (error) {
-            console.error('Failed to fetch initial data', error);
+            console.error('Failed to fetch profile data', error);
         } finally {
             setIsLoadingProfile(false);
         }
     }
 
-    fetchProfileAndProgress();
+    fetchProfile();
 
     // Determine today's lessons from timetable
     const today = new Date().toLocaleDateString('en-US', { weekday: 'long' });
@@ -176,15 +163,6 @@ export function DashboardClient() {
                     {allLessonsDone ? "You've completed your missions for today!" : "Here is your next lesson for today. Let's get started!"}
                 </p>
                 </div>
-                <Card className="shrink-0 w-full sm:w-auto">
-                    <CardHeader className="p-4 flex-row items-center gap-4 space-y-0">
-                        <Trophy className="w-10 h-10 text-yellow-500" />
-                        <div>
-                            <CardDescription>Total XP Earned</CardDescription>
-                            <CardTitle className="text-2xl">{totalXp.toLocaleString()}</CardTitle>
-                        </div>
-                    </CardHeader>
-                </Card>
             </div>
           </section>
 

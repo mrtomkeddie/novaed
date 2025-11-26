@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { subjects } from '@/data/subjects';
 import type { GenerateLessonSummaryOutput } from '@/ai/flows/generate-lesson-summary';
-import { Loader2, Award, BookOpen, BrainCircuit, Calendar, Check, X } from 'lucide-react';
+import { Loader2, Award, BookOpen, BrainCircuit, Calendar, Check, X, Trophy } from 'lucide-react';
 import {
     Select,
     SelectContent,
@@ -26,6 +26,7 @@ export function ProgressClient() {
   const [error, setError] = useState<string | null>(null);
   const [selectedSubject, setSelectedSubject] = useState<string>('all');
   const [availableSubjects, setAvailableSubjects] = useState<string[]>([]);
+  const [totalXp, setTotalXp] = useState(0);
 
   useEffect(() => {
     async function fetchProgress() {
@@ -40,7 +41,7 @@ export function ProgressClient() {
             if (!response.ok) {
                 throw new Error('Failed to fetch progress data.');
             }
-            const data = await response.json();
+            const data: GenerateLessonSummaryOutput[] = await response.json();
             // Sort data by date descending
             const sortedData = data.sort((a: any, b: any) => {
                 const dateA = a.date.seconds ? new Date(a.date.seconds * 1000) : new Date(a.date);
@@ -48,6 +49,10 @@ export function ProgressClient() {
                 return dateB.getTime() - dateA.getTime();
             });
             setProgressData(sortedData);
+            
+            const total = sortedData.reduce((acc, summary) => acc + summary.xp_earned, 0);
+            setTotalXp(total);
+
         } catch (err: any) {
             setError(err.message || 'An unknown error occurred.');
             console.error(err);
@@ -91,6 +96,15 @@ export function ProgressClient() {
                     </p>
                 </div>
                 <div className="flex items-center gap-4 shrink-0">
+                    <Card className="shrink-0 w-full sm:w-auto">
+                        <CardHeader className="p-3 flex-row items-center gap-4 space-y-0">
+                            <Trophy className="w-8 h-8 text-yellow-500" />
+                            <div>
+                                <CardDescription>Total XP</CardDescription>
+                                <CardTitle className="text-xl">{totalXp.toLocaleString()}</CardTitle>
+                            </div>
+                        </CardHeader>
+                    </Card>
                     <Select value={selectedSubject} onValueChange={setSelectedSubject} disabled={availableSubjects.length === 0}>
                         <SelectTrigger className="w-full sm:w-[240px]">
                             <SelectValue placeholder="Filter by subject..." />
