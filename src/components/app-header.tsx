@@ -4,7 +4,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Menu } from 'lucide-react';
 import { AppSidebar } from '@/components/app-sidebar';
 
@@ -28,7 +28,16 @@ export function AppHeader() {
               <span className="sr-only">Open menu</span>
             </Button>
           </SheetTrigger>
-          <SheetContent side="right" className="p-0">
+          <SheetContent
+            side="right"
+            className="p-0"
+            aria-labelledby="main-menu-title"
+            aria-describedby="main-menu-description"
+          >
+            <SheetTitle id="main-menu-title" className="sr-only">Main Menu</SheetTitle>
+            <SheetDescription id="main-menu-description" className="sr-only">
+              Navigate to different sections of the application like Dashboard, Subjects, and Profile.
+            </SheetDescription>
             <AppSidebar isDrawer={true} />
           </SheetContent>
         </Sheet>
