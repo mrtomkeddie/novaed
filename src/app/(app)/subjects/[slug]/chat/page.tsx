@@ -11,7 +11,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { subjects } from '@/data/subjects';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
-import type { Lesson, UserProfile } from '@/types';
+import type { Lesson, UserProfile, GenerateLessonSummaryOutput } from '@/types';
 import { Calculator } from '@/components/calculator';
 import {
   AlertDialog,
@@ -30,15 +30,21 @@ import {
     DialogDescription,
     DialogHeader,
     DialogTitle,
+    DialogClose
 } from "@/components/ui/dialog";
-import type { GenerateLessonSummaryOutput } from '@/ai/flows/generate-lesson-summary';
 import { Badge } from '@/components/ui/badge';
+import { InteractiveImage } from '@/components/interactive-image';
+
 
 type Message = {
   role: 'user' | 'assistant';
   content: string;
   feedback?: string;
   multipleChoiceOptions?: string[] | null;
+  interactiveImage?: {
+    imageUrl: string;
+    targets: { name: string; x: number; y: number; radius: number }[];
+  } | null;
 };
 
 type LessonPhase = 'Warm-Up & Recap' | 'Teach & Assess' | 'Wind-Down & Bonus';
@@ -68,6 +74,7 @@ export default function ChatPage() {
   const [isTimerRunning, setIsTimerRunning] = useState(false);
   const [isTimeUp, setIsTimeUp] = useState(false);
   const [lessonSummary, setLessonSummary] = useState<GenerateLessonSummaryOutput | null>(null);
+  const [animationState, setAnimationState] = useState<{ target: string | null; type: 'correct' | 'incorrect' | null }>({ target: null, type: null });
 
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const isInitialLoad = useRef(true);
@@ -164,6 +171,16 @@ export default function ChatPage() {
       viewport.scrollTop = viewport.scrollHeight;
     }
   }, [messages, isNovaTyping]);
+
+  const handleImageTargetClick = (name: string) => {
+    // This is where you could add logic to check if the answer is correct.
+    // For now, we'll just simulate a "correct" animation and send it as the user's message.
+    setAnimationState({ target: name, type: 'correct' });
+    setTimeout(() => {
+      setAnimationState({ target: null, type: null });
+      sendUserMessageAndGetFeedback(`I clicked on ${name}.`);
+    }, 500); // Duration of the animation
+  };
 
   const sendUserMessageAndGetFeedback = async (content: string, topicOverride?: Lesson | null) => {
     const topicToUse = topicOverride || currentTopic;
@@ -306,6 +323,11 @@ export default function ChatPage() {
     lastMessage?.role === 'assistant' &&
     (lastMessage.multipleChoiceOptions?.length ?? 0) > 0 &&
     !isNovaTyping;
+  
+  const lastMessageIsInteractiveImage =
+    lastMessage?.role === 'assistant' &&
+    !!lastMessage.interactiveImage &&
+    !isNovaTyping;
 
   if (isLoading || !subject) {
     return (
@@ -335,6 +357,7 @@ export default function ChatPage() {
               Resume Lesson
             </Button>
           </div>
+           <DialogClose className="sr-only" />
         </DialogContent>
       </Dialog>
 
@@ -379,6 +402,7 @@ export default function ChatPage() {
               Back to Dashboard
             </Button>
           </div>
+          <DialogClose className="sr-only" />
         </DialogContent>
       </Dialog>
       
@@ -386,12 +410,26 @@ export default function ChatPage() {
         <div className="flex flex-col flex-1 min-w-0">
             <header className="relative flex items-center justify-between p-3 border-b bg-card h-20">
                 <div className="absolute left-4 top-1/2 -translate-y-1/2">
-                    <Button variant="ghost" size="icon" asChild>
-                        <Link href="/dashboard">
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="ghost" size="icon">
                             <ArrowLeft />
                             <span className="sr-only">Back to Dashboard</span>
-                        </Link>
-                    </Button>
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Are you sure you want to leave?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            If you leave now, your lesson progress will not be saved.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Stay</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => router.push('/dashboard')}>Leave</AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                 </div>
                 <div className="text-center px-4 flex-1 flex flex-col items-center justify-center">
                     <h1 className="text-lg font-bold font-headline text-foreground truncate w-full">
@@ -470,6 +508,15 @@ export default function ChatPage() {
                         )}
                     >
                         <p className="text-base whitespace-pre-wrap">{message.feedback || message.content}</p>
+
+                        {message.interactiveImage && (
+                          <InteractiveImage 
+                              imageUrl={message.interactiveImage.imageUrl}
+                              targets={message.interactiveImage.targets}
+                              onTargetClick={handleImageTargetClick}
+                              animationState={animationState}
+                          />
+                        )}
                         
                         {message.role === 'assistant' &&
                         message.multipleChoiceOptions &&
@@ -528,10 +575,12 @@ export default function ChatPage() {
                     ? 'Time is up. Type your final message...'
                     : lastMessageHasOptions
                     ? 'Select an option above'
+                    : lastMessageIsInteractiveImage
+                    ? 'Click on the image above to answer'
                     : 'Type your message to Nova...'
                 }
                 autoComplete="off"
-                disabled={isNovaTyping || isLogging || (lastMessageHasOptions && !isTimeUp)}
+                disabled={isNovaTyping || isLogging || (lastMessageHasOptions && !isTimeUp) || lastMessageIsInteractiveImage}
                 className="text-base h-12 flex-1"
                 />
                 {showCalculator && (
@@ -540,7 +589,7 @@ export default function ChatPage() {
                     <span className="sr-only sm:not-sr-only sm:ml-2">Calculator</span>
                   </Button>
                 )}
-                <Button type="submit" size="lg" disabled={!input.trim() || isNovaTyping || isLogging || (lastMessageHasOptions && !isTimeUp)} className="h-12 shrink-0 px-3 sm:px-4">
+                <Button type="submit" size="lg" disabled={!input.trim() || isNovaTyping || isLogging || (lastMessageHasOptions && !isTimeUp) || lastMessageIsInteractiveImage} className="h-12 shrink-0 px-3 sm:px-4">
                 <Send className="h-5 w-5" />
                 <span className="sr-only sm:not-sr-only sm:ml-2">Send</span>
                 </Button>
@@ -568,5 +617,3 @@ export default function ChatPage() {
     </>
   );
 }
-
-    

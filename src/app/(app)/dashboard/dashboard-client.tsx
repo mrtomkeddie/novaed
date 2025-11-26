@@ -9,8 +9,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Timetable } from '@/components/timetable';
-import { ArrowRight, Gamepad2, SkipForward, CalendarDays, CheckCircle, RefreshCw, Loader2 } from 'lucide-react';
-import type { Subject, UserProfile } from '@/types';
+import { ArrowRight, Gamepad2, SkipForward, CalendarDays, CheckCircle, RefreshCw, Loader2, Trophy } from 'lucide-react';
+import type { Subject, UserProfile, GenerateLessonSummaryOutput } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 
 const userId = 'charlie';
@@ -27,14 +27,18 @@ export function DashboardClient() {
   const [greeting, setGreeting] = useState("Welcome");
   const [welcomeName, setWelcomeName] = useState('...');
   const [isLoading, setIsLoading] = useState(true);
+  const [totalXp, setTotalXp] = useState(0);
   const { toast } = useToast();
   const [selectedWeek, setSelectedWeek] = useState(1);
   const [isLoadingProfile, setIsLoadingProfile] = useState(true);
+  const [isLoadingProgress, setIsLoadingProgress] = useState(true);
 
   useEffect(() => {
     setIsLoading(true);
     
-    async function fetchProfile() {
+    async function fetchData() {
+        setIsLoadingProfile(true);
+        setIsLoadingProgress(true);
         try {
             const profileRes = await fetch('/api/get-user-profile', {
                 method: 'POST',
@@ -50,56 +54,73 @@ export function DashboardClient() {
         } finally {
             setIsLoadingProfile(false);
         }
-    }
 
-    fetchProfile();
-
-    // Determine today's lessons from timetable
-    const today = new Date().toLocaleDateString('en-US', { weekday: 'long' });
-    
-    // For simplicity, we'll just use week 1's schedule for the dashboard logic
-    const week1Data = timetableData.find(w => w.week === 1);
-    const scheduledLessons = week1Data?.days.find(d => d.day === today)?.periods || [];
-    
-    const lessonsWithSubjects: DailyLesson[] = scheduledLessons.map(lessonName => {
-        if (!lessonName) return null;
-        const subject = subjects.find(s => s.name.toLowerCase() === lessonName.toLowerCase());
-        return {
-            subjectName: lessonName,
-            lessonTitle: subject?.description || 'Time to learn!',
-            subject: subject,
-        };
-    }).filter((l): l is DailyLesson => l !== null && l.subject !== undefined);
-
-    setTodaysLessons(lessonsWithSubjects);
-
-    // Get today's progress from localStorage
-    const savedProgress = localStorage.getItem('dailyProgress');
-    const todayStr = new Date().toISOString().split('T')[0];
-    if (savedProgress) {
         try {
-            const { date, index } = JSON.parse(savedProgress);
-            if (date === todayStr) {
-                setCurrentLessonIndex(index);
-            } else {
-                localStorage.setItem('dailyProgress', JSON.stringify({ date: todayStr, index: 0 }));
-                setCurrentLessonIndex(0);
+            const progressRes = await fetch('/api/get-all-user-progress', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId }),
+            });
+            if (progressRes.ok) {
+                const progressData: GenerateLessonSummaryOutput[] = await progressRes.json();
+                const total = progressData.reduce((acc, summary) => acc + summary.xp_earned, 0);
+                setTotalXp(total);
             }
-        } catch (e) {
+        } catch (error) {
+            console.error('Failed to fetch progress data', error);
+        } finally {
+            setIsLoadingProgress(false);
+        }
+
+        // Determine today's lessons from timetable
+        const today = new Date().toLocaleDateString('en-US', { weekday: 'long' });
+        
+        // For simplicity, we'll just use week 1's schedule for the dashboard logic
+        const week1Data = timetableData.find(w => w.week === 1);
+        const scheduledLessons = week1Data?.days.find(d => d.day === today)?.periods || [];
+        
+        const lessonsWithSubjects: DailyLesson[] = scheduledLessons.map(lessonName => {
+            if (!lessonName) return null;
+            const subject = subjects.find(s => s.name.toLowerCase() === lessonName.toLowerCase());
+            return {
+                subjectName: lessonName,
+                lessonTitle: subject?.description || 'Time to learn!',
+                subject: subject,
+            };
+        }).filter((l): l is DailyLesson => l !== null && l.subject !== undefined);
+
+        setTodaysLessons(lessonsWithSubjects);
+
+        // Get today's progress from localStorage
+        const savedProgress = localStorage.getItem('dailyProgress');
+        const todayStr = new Date().toISOString().split('T')[0];
+        if (savedProgress) {
+            try {
+                const { date, index } = JSON.parse(savedProgress);
+                if (date === todayStr) {
+                    setCurrentLessonIndex(index);
+                } else {
+                    localStorage.setItem('dailyProgress', JSON.stringify({ date: todayStr, index: 0 }));
+                    setCurrentLessonIndex(0);
+                }
+            } catch (e) {
+                localStorage.setItem('dailyProgress', JSON.stringify({ date: todayStr, index: 0 }));
+            }
+        } else {
             localStorage.setItem('dailyProgress', JSON.stringify({ date: todayStr, index: 0 }));
         }
-    } else {
-        localStorage.setItem('dailyProgress', JSON.stringify({ date: todayStr, index: 0 }));
+
+        // Set a random greeting
+        const returnGreetings = [
+            "Welcome back", "Great to see you again", "Let's get learning",
+            "Ready for a new challenge?", "Time for another adventure",
+        ];
+        const randomGreeting = returnGreetings[Math.floor(Math.random() * returnGreetings.length)];
+        setGreeting(randomGreeting);
+
+        setIsLoading(false);
     }
-
-    // Set a random greeting
-    const returnGreetings = [
-        "Welcome back", "Great to see you again", "Let's get learning",
-        "Ready for a new challenge?", "Time for another adventure",
-    ];
-    setGreeting(returnGreetings[Math.floor(Math.random() * returnGreetings.length)]);
-
-    setIsLoading(false);
+    fetchData();
 
   }, []);
 
@@ -149,17 +170,36 @@ export function DashboardClient() {
     <div className="flex flex-col min-h-screen">
       <main className="flex-1">
         <div className="container mx-auto px-4 py-8 md:py-12">
-          <section className="text-center mb-10">
-                {isLoadingProfile ? (
-                    <div className="h-14 w-96 bg-muted/50 rounded-md animate-pulse mx-auto" />
-                ) : (
-                    <h1 className="text-4xl font-bold font-headline tracking-tight sm:text-5xl capitalize">
-                        {greeting}, {welcomeName}!
-                    </h1>
-                )}
-                <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
-                    {allLessonsDone ? "You've completed your missions for today!" : "Here is your next lesson for today. Let's get started!"}
-                </p>
+          <section className="mb-10">
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div className="text-center sm:text-left">
+                        {isLoadingProfile ? (
+                            <div className="h-14 w-96 bg-muted/50 rounded-md animate-pulse mx-auto sm:mx-0" />
+                        ) : (
+                            <h1 className="text-4xl font-bold font-headline tracking-tight sm:text-5xl capitalize">
+                                {greeting}, {welcomeName}!
+                            </h1>
+                        )}
+                        <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto sm:mx-0">
+                            {allLessonsDone ? "You've completed your missions for today!" : "Here is your next lesson for today. Let's get started!"}
+                        </p>
+                    </div>
+                     <div className="shrink-0">
+                        {isLoadingProgress ? (
+                             <div className="h-20 w-48 bg-muted/50 rounded-lg animate-pulse" />
+                        ) : (
+                             <Card>
+                                <CardHeader className="p-3 flex-row items-center gap-4 space-y-0">
+                                    <Trophy className="w-8 h-8 text-yellow-500" />
+                                    <div>
+                                        <CardDescription>Total XP</CardDescription>
+                                        <CardTitle className="text-xl">{totalXp.toLocaleString()}</CardTitle>
+                                    </div>
+                                </CardHeader>
+                            </Card>
+                        )}
+                    </div>
+                </div>
           </section>
 
           <section className="max-w-2xl mx-auto mb-10">
@@ -241,9 +281,8 @@ export function DashboardClient() {
                   </DialogTrigger>
                   <DialogContent className="max-w-[95vw] sm:max-w-5xl">
                       <DialogHeader>
-                        <div className="flex items-center gap-4 justify-start">
                           <DialogTitle>Weekly Timetable</DialogTitle>
-                           <div className="flex items-center gap-2">
+                           <div className="flex items-center gap-2 pt-2">
                                 <Button
                                     variant={selectedWeek === 1 ? 'default' : 'outline'}
                                     size="sm"
@@ -259,7 +298,6 @@ export function DashboardClient() {
                                     Week 2
                                 </Button>
                             </div>
-                          </div>
                       </DialogHeader>
                       <Timetable selectedWeek={selectedWeek} />
                   </DialogContent>
@@ -279,5 +317,3 @@ export function DashboardClient() {
     </div>
   );
 }
-
-    
