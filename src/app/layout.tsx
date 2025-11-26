@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import type {Metadata, Viewport} from 'next';
 import { PT_Sans } from 'next/font/google';
-import './globals.css';
+import '@/app/globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import { cn } from '@/lib/utils';
 import { PWALoader } from '@/components/pwa-loader';
