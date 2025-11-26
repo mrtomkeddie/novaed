@@ -27,18 +27,14 @@ export function DashboardClient() {
   const [greeting, setGreeting] = useState("Welcome");
   const [welcomeName, setWelcomeName] = useState('...');
   const [isLoading, setIsLoading] = useState(true);
-  const [totalXp, setTotalXp] = useState(0);
-  const { toast } = useToast();
   const [selectedWeek, setSelectedWeek] = useState(1);
   const [isLoadingProfile, setIsLoadingProfile] = useState(true);
-  const [isLoadingProgress, setIsLoadingProgress] = useState(true);
 
   useEffect(() => {
     setIsLoading(true);
     
     async function fetchData() {
         setIsLoadingProfile(true);
-        setIsLoadingProgress(true);
         try {
             const profileRes = await fetch('/api/get-user-profile', {
                 method: 'POST',
@@ -53,23 +49,6 @@ export function DashboardClient() {
             console.error('Failed to fetch profile data', error);
         } finally {
             setIsLoadingProfile(false);
-        }
-
-        try {
-            const progressRes = await fetch('/api/get-all-user-progress', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId }),
-            });
-            if (progressRes.ok) {
-                const progressData: GenerateLessonSummaryOutput[] = await progressRes.json();
-                const total = progressData.reduce((acc, summary) => acc + summary.xp_earned, 0);
-                setTotalXp(total);
-            }
-        } catch (error) {
-            console.error('Failed to fetch progress data', error);
-        } finally {
-            setIsLoadingProgress(false);
         }
 
         // Determine today's lessons from timetable
@@ -170,36 +149,21 @@ export function DashboardClient() {
     <div className="flex flex-col min-h-screen">
       <main className="flex-1">
         <div className="container mx-auto px-4 py-8 md:py-12">
-          <section className="mb-10">
-                <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                    <div className="text-center sm:text-left">
-                        {isLoadingProfile ? (
-                            <div className="h-14 w-96 bg-muted/50 rounded-md animate-pulse mx-auto sm:mx-0" />
-                        ) : (
-                            <h1 className="text-4xl font-bold font-headline tracking-tight sm:text-5xl capitalize">
-                                {greeting}, {welcomeName}!
-                            </h1>
-                        )}
-                        <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto sm:mx-0">
-                            {allLessonsDone ? "You've completed your missions for today!" : "Here is your next lesson for today. Let's get started!"}
-                        </p>
-                    </div>
-                     <div className="shrink-0">
-                        {isLoadingProgress ? (
-                             <div className="h-20 w-48 bg-muted/50 rounded-lg animate-pulse" />
-                        ) : (
-                             <Card>
-                                <CardHeader className="p-3 flex-row items-center gap-4 space-y-0">
-                                    <Trophy className="w-8 h-8 text-yellow-500" />
-                                    <div>
-                                        <CardDescription>Total XP</CardDescription>
-                                        <CardTitle className="text-xl">{totalXp.toLocaleString()}</CardTitle>
-                                    </div>
-                                </CardHeader>
-                            </Card>
-                        )}
-                    </div>
-                </div>
+          <section className="text-center mb-10">
+              <div className="flex flex-col items-center justify-between gap-4">
+                  <div className="text-center">
+                      {isLoadingProfile ? (
+                          <div className="h-14 w-96 bg-muted/50 rounded-md animate-pulse mx-auto" />
+                      ) : (
+                          <h1 className="text-4xl font-bold font-headline tracking-tight sm:text-5xl capitalize">
+                              {greeting}, {welcomeName}!
+                          </h1>
+                      )}
+                      <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
+                          {allLessonsDone ? "You've completed your missions for today!" : "Here is your next lesson for today. Let's get started!"}
+                      </p>
+                  </div>
+              </div>
           </section>
 
           <section className="max-w-2xl mx-auto mb-10">
