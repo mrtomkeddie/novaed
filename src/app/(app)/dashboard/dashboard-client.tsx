@@ -149,21 +149,17 @@ export function DashboardClient() {
     <div className="flex flex-col min-h-screen">
       <main className="flex-1">
         <div className="container mx-auto px-4 py-8 md:py-12">
-          <section className="mb-10">
-            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-                <div>
+          <section className="text-center mb-10">
                 {isLoadingProfile ? (
-                    <div className="h-14 w-96 bg-muted/50 rounded-md animate-pulse" />
+                    <div className="h-14 w-96 bg-muted/50 rounded-md animate-pulse mx-auto" />
                 ) : (
                     <h1 className="text-4xl font-bold font-headline tracking-tight sm:text-5xl capitalize">
                         {greeting}, {welcomeName}!
                     </h1>
                 )}
-                <p className="mt-4 text-lg text-muted-foreground max-w-2xl">
+                <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
                     {allLessonsDone ? "You've completed your missions for today!" : "Here is your next lesson for today. Let's get started!"}
                 </p>
-                </div>
-            </div>
           </section>
 
           <section className="max-w-2xl mx-auto mb-10">
@@ -283,3 +279,5 @@ export function DashboardClient() {
     </div>
   );
 }
+
+    
