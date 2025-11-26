@@ -6,8 +6,11 @@
  */
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-import fs from 'fs';
-import path from 'path';
+import { masterPrompt } from '@/data/prompts/master';
+import { mathsPrompt } from '@/data/prompts/maths';
+import { sciencePrompt } from '@/data/prompts/science';
+import { englishPrompt } from '@/data/prompts/english';
+import { creatorPrompt } from '@/data/prompts/creator';
 
 // Define the structure for a single message in the chat history.
 const ChatMessageSchema = z.object({
@@ -31,23 +34,22 @@ const GetAITutorFeedbackOutputSchema = z.object({
 });
 export type GetAITutorFeedbackOutput = z.infer<typeof GetAITutorFeedbackOutputSchema>;
 
-// Helper to get the correct subject prompt file
-const getSubjectPromptFile = (subjectName: string): string => {
+// Helper to get the correct subject prompt
+const getSubjectPrompt = (subjectName: string): string => {
     const lowerCaseSubject = subjectName.toLowerCase();
     if (lowerCaseSubject.includes('maths')) {
-        return 'maths.md';
+        return mathsPrompt;
     }
     if (lowerCaseSubject.includes('physics') || lowerCaseSubject.includes('chemistry') || lowerCaseSubject.includes('biology')) {
-        return 'science.md';
+        return sciencePrompt;
     }
     if (lowerCaseSubject.includes('english')) {
-        return 'english.md';
+        return englishPrompt;
     }
-    // Add a case for the new Creator Mode
     if (lowerCaseSubject.includes('creator')) {
-        return 'creator.md';
+        return creatorPrompt;
     }
-    return 'default.md'; // A fallback generic prompt
+    return ''; // A fallback generic prompt
 };
 
 
@@ -69,23 +71,11 @@ const aiTutorFeedbackFlow = ai.defineFlow(
         };
     }
 
-    // Read the master personality prompt
-    const personalityPromptPath = path.join(process.cwd(), 'public', 'Tutor Prompt.md');
-    const personalityPrompt = fs.readFileSync(personalityPromptPath, 'utf-8');
-
-    // Read the subject-specific module prompt
-    const subjectPromptFile = getSubjectPromptFile(input.subject);
-    const subjectPromptPath = path.join(process.cwd(), 'public', 'prompts', subjectPromptFile);
-    let subjectPrompt = '';
-    try {
-        subjectPrompt = fs.readFileSync(subjectPromptPath, 'utf-8');
-    } catch (error) {
-        console.warn(`Could not read subject prompt file: ${subjectPromptFile}. Using personality prompt only.`);
-    }
+    const subjectPrompt = getSubjectPrompt(input.subject);
     
     // The prompt now combines the master instructions with the subject-specific module.
     const prompt = `
-      ${personalityPrompt}
+      ${masterPrompt}
 
       ${subjectPrompt}
 

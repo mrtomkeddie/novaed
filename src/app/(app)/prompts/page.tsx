@@ -14,27 +14,13 @@ import {
 } from "@/components/ui/accordion";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import fs from 'fs';
-import path from 'path';
-
-// Helper function to read a file, returning an error message on failure.
-const readFileContent = (filePath: string) => {
-    try {
-        const fullPath = path.join(process.cwd(), filePath);
-        return fs.readFileSync(fullPath, 'utf-8');
-    } catch (error) {
-        console.error(`Could not read prompt file: ${filePath}`, error);
-        return `Error: Could not load the prompt. The file '${filePath}' may be missing.`;
-    }
-}
-
-export default function PromptsPage() {
-  const masterPrompt = readFileContent('public/Tutor Prompt.md');
-  const mathsPrompt = readFileContent('public/prompts/maths.md');
-  const sciencePrompt = readFileContent('public/prompts/science.md');
-  const englishPrompt = readFileContent('public/prompts/english.md');
-  const creatorPrompt = readFileContent('public/prompts/creator.md');
+import { masterPrompt } from "@/data/prompts/master";
+import { mathsPrompt } from "@/data/prompts/maths";
+import { sciencePrompt } from "@/data/prompts/science";
+import { englishPrompt } from "@/data/prompts/english";
+import { creatorPrompt } from "@/data/prompts/creator";
     
+export default function PromptsPage() {
   return (
     <div className="flex flex-col min-h-screen">
       <main className="flex-1">
