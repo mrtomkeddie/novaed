@@ -1,10 +1,9 @@
-
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, Send, Bot, User, Loader2, CalculatorIcon, X, TimerIcon, Pause, Play } from 'lucide-react';
+import { ArrowLeft, Send, Bot, User, Loader2, CalculatorIcon, X, TimerIcon, Pause, Play, Award, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -32,6 +31,8 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
+import type { GenerateLessonSummaryOutput } from '@/ai/flows/generate-lesson-summary';
+import { Badge } from '@/components/ui/badge';
 
 type Message = {
   role: 'user' | 'assistant';
@@ -44,7 +45,6 @@ type LessonPhase = 'Warm-Up & Recap' | 'Teach & Assess' | 'Wind-Down & Bonus';
 
 // Hardcoded user for "Charlie"
 const userId = 'charlie';
-const userProfile: UserProfile = { displayName: 'Charlie' };
 
 const LESSON_DURATION_SECONDS = 25 * 60; // 25 minutes
 
@@ -67,6 +67,7 @@ export default function ChatPage() {
   const [lessonPhase, setLessonPhase] = useState<LessonPhase>('Warm-Up & Recap');
   const [isTimerRunning, setIsTimerRunning] = useState(false);
   const [isTimeUp, setIsTimeUp] = useState(false);
+  const [lessonSummary, setLessonSummary] = useState<GenerateLessonSummaryOutput | null>(null);
 
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const isInitialLoad = useRef(true);
@@ -246,9 +247,6 @@ export default function ChatPage() {
       description: 'Nova is summarizing your progress.',
     });
 
-    // Use a short delay to allow the toast to be seen before navigating
-    await new Promise(resolve => setTimeout(resolve, 1500));
-
     const simplifiedHistory = messages.map(m => ({
         role: m.role,
         content: m.feedback || m.content,
@@ -271,6 +269,7 @@ export default function ChatPage() {
       }
 
       const summary = await summaryResponse.json();
+      setLessonSummary(summary);
       
       const logResponse = await fetch('/api/log-progress', {
         method: 'POST',
@@ -282,24 +281,6 @@ export default function ChatPage() {
         throw new Error('Failed to log progress');
       }
 
-      const { success, error } = await logResponse.json();
-
-      if (success) {
-        toast({
-          title: 'Progress Saved! 🎉',
-          description: 'Your lesson summary has been logged successfully.',
-        });
-        
-        router.push('/dashboard');
-      } else {
-        toast({
-          variant: 'destructive',
-          title: 'Error Saving Progress',
-          description: error || 'Your progress could not be saved.',
-          duration: 8000,
-        });
-        router.push('/dashboard');
-      }
     } catch (error: any) {
       console.error('Error ending lesson:', error);
       toast({
@@ -335,7 +316,7 @@ export default function ChatPage() {
     );
   }
   
-  const showPauseDialog = !isTimerRunning && !isLoading && !isLogging && !isTimeUp;
+  const showPauseDialog = !isTimerRunning && !isLoading && !isLogging && !isTimeUp && !lessonSummary;
   const showCalculator = ['maths', 'physics', 'chemistry'].some(term => subject.name.toLowerCase().includes(term));
 
   return (
@@ -356,9 +337,62 @@ export default function ChatPage() {
           </div>
         </DialogContent>
       </Dialog>
+
+      <Dialog open={!!lessonSummary} onOpenChange={() => router.push('/dashboard')}>
+        <DialogContent showCloseButton={false} onInteractOutside={(e) => e.preventDefault()} onEscapeKeyDown={(e) => e.preventDefault()}>
+          <DialogHeader className="items-center text-center">
+            <CheckCircle className="h-16 w-16 text-green-500 mb-4" />
+            <DialogTitle className="text-2xl">Lesson Complete!</DialogTitle>
+            <DialogDescription>
+              Great work! Here's a summary of your performance.
+            </DialogDescription>
+          </DialogHeader>
+          {lessonSummary && (
+            <div className="my-4 space-y-4">
+              <div className="p-4 rounded-lg bg-secondary text-center">
+                <p className="text-sm text-secondary-foreground">TOPIC</p>
+                <p className="font-semibold">{lessonSummary.topic_title}</p>
+              </div>
+              <div className="grid grid-cols-2 gap-4 text-center">
+                <div className="p-4 rounded-lg bg-secondary">
+                  <p className="text-sm text-secondary-foreground">MASTERY</p>
+                  <Badge variant={lessonSummary.mastery_status === 'Yes' ? 'default' : 'destructive'} className={cn("text-lg", lessonSummary.mastery_status === 'Yes' ? 'bg-green-600' : '')}>
+                    {lessonSummary.mastery_status}
+                  </Badge>
+                </div>
+                <div className="p-4 rounded-lg bg-secondary">
+                  <p className="text-sm text-secondary-foreground">XP EARNED</p>
+                  <p className="font-semibold text-lg flex items-center justify-center gap-2">
+                    <Award className="text-yellow-500" />
+                    {lessonSummary.xp_earned}
+                  </p>
+                </div>
+              </div>
+              <div className="p-4 rounded-lg bg-secondary text-center">
+                <p className="text-sm text-secondary-foreground">TUTOR'S SUMMARY</p>
+                <p className="italic">"{lessonSummary.tutor_summary}"</p>
+              </div>
+            </div>
+          )}
+          <div className="flex justify-center">
+            <Button size="lg" onClick={() => router.push('/dashboard')}>
+              Back to Dashboard
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+      
       <div className="flex h-screen bg-background">
         <div className="flex flex-col flex-1 min-w-0">
             <header className="relative flex items-center justify-between p-3 border-b bg-card h-20">
+                <div className="absolute left-4 top-1/2 -translate-y-1/2">
+                    <Button variant="ghost" size="icon" asChild>
+                        <Link href="/dashboard">
+                            <ArrowLeft />
+                            <span className="sr-only">Back to Dashboard</span>
+                        </Link>
+                    </Button>
+                </div>
                 <div className="text-center px-4 flex-1 flex flex-col items-center justify-center">
                     <h1 className="text-lg font-bold font-headline text-foreground truncate w-full">
                     {currentTopic?.title || subject.name}
@@ -396,12 +430,12 @@ export default function ChatPage() {
                         <AlertDialogHeader>
                         <AlertDialogTitle>Are you sure you want to end the lesson?</AlertDialogTitle>
                         <AlertDialogDescription>
-                            This will save your progress and return you to the dashboard.
+                            This will save your progress and show your results.
                         </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={handleEndLesson}>Continue</AlertDialogAction>
+                        <AlertDialogAction onClick={handleEndLesson}>End Lesson</AlertDialogAction>
                         </AlertDialogFooter>
                     </AlertDialogContent>
                     </AlertDialog>
@@ -534,3 +568,5 @@ export default function ChatPage() {
     </>
   );
 }
+
+    
