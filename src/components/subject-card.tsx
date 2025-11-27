@@ -17,16 +17,18 @@ interface SubjectCardProps {
 }
 
 export function SubjectCard({ subject }: SubjectCardProps) {
-  const Icon = subject.icon;
+  const Icon = subject?.icon;
   // Using dummy progress data
   const progress = Math.floor(Math.random() * 80) + 10; // Random progress between 10-90%
+
+  if (!subject) return null;
 
   return (
     <Card className="flex flex-col h-full hover:shadow-lg transition-shadow duration-300 ease-in-out">
       <CardHeader>
         <div className="flex items-start gap-4">
           <div className="p-3 bg-primary/10 rounded-lg">
-            <Icon className="w-6 h-6 text-primary" />
+            {Icon && <Icon className="w-6 h-6 text-primary" />}
           </div>
           <div className="flex-1">
             <CardTitle className="font-headline text-lg">{subject.name}</CardTitle>
