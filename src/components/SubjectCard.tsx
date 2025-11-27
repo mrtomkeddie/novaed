@@ -16,12 +16,15 @@ interface SubjectCardProps {
   subject: Subject;
 }
 
-export function SubjectCard({ subject }: SubjectCardProps) {
+export default function SubjectCard({ subject }: SubjectCardProps) {
   const Icon = subject?.icon;
   // Using dummy progress data
   const progress = Math.floor(Math.random() * 80) + 10; // Random progress between 10-90%
 
-  if (!subject) return null;
+  if (!subject) {
+    console.error("SubjectCard: subject prop is missing");
+    return null;
+  }
 
   return (
     <Card className="flex flex-col h-full hover:shadow-lg transition-shadow duration-300 ease-in-out">

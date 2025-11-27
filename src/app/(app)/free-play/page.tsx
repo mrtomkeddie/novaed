@@ -1,5 +1,5 @@
 
-import { SubjectCard } from "@/components/subject-card";
+import SubjectCard from "@/components/SubjectCard";
 import { subjects } from "@/data/subjects";
 
 export default function FreePlayPage() {
