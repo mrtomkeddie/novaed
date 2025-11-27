@@ -11,7 +11,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { subjects } from '@/data/subjects';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
-import type { Lesson, UserProfile, GenerateLessonSummaryOutput } from '@/types';
+import type { Lesson, UserProfile } from '@/types';
+import type { GenerateLessonSummaryOutput } from '@/ai/flows/generate-lesson-summary';
 import { Calculator } from '@/components/calculator';
 import {
   AlertDialog,

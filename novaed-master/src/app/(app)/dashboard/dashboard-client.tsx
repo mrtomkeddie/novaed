@@ -45,7 +45,7 @@ export function DashboardClient() {
     if (isClient) {
         // Determine today's lessons from timetable
         const today = new Date().toLocaleDateString('en-US', { weekday: 'long' });
-        const scheduledLessons = timetableData.find(d => d.day === today)?.periods || [];
+        const scheduledLessons = (timetableData as { day: string; periods: string[] }[]).find(d => d.day === today)?.periods || [];
         
         const lessonsWithSubjects: DailyLesson[] = scheduledLessons.map(lessonName => {
             const subject = subjects.find(s => s.name.toLowerCase() === lessonName.toLowerCase());

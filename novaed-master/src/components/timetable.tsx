@@ -17,8 +17,13 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 
+type TimetableDay = {
+  day: string;
+  periods: string[];
+};
+
 // The timetable data is now hardcoded here for simplicity and reliability.
-export const timetableData = [
+export const timetableData: TimetableDay[] = [
     {
       day: 'Monday',
       periods: ['Maths (Core)', 'English A (Grammar)', 'Biology', 'Physics', 'Chemistry'],

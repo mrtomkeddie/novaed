@@ -10,7 +10,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Timetable } from '@/components/timetable';
 import { ArrowRight, Gamepad2, SkipForward, CalendarDays, CheckCircle, RefreshCw, Loader2, Trophy } from 'lucide-react';
-import type { Subject, UserProfile, GenerateLessonSummaryOutput } from '@/types';
+import type { Subject, UserProfile } from '@/types';
+import type { GenerateLessonSummaryOutput } from '@/ai/flows/generate-lesson-summary';
 import { useToast } from '@/hooks/use-toast';
 
 const userId = 'charlie';

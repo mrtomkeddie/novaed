@@ -2,13 +2,17 @@
 import type {NextConfig} from 'next';
 
 const nextConfig: NextConfig = {
-  output: 'standalone', // Required for Firebase Hosting
-  typescript: {
-    ignoreBuildErrors: true,
-  },
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
+  // Remove output: 'standalone' for Vercel deployment
+  // output: 'standalone', // Only needed for Firebase Hosting
+  
+  // Remove these dangerous settings for production
+  // typescript: {
+  //   ignoreBuildErrors: true,
+  // },
+  // eslint: {
+  //   ignoreDuringBuilds: true,
+  // },
+  
   images: {
     remotePatterns: [
       {

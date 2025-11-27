@@ -24,7 +24,7 @@ function initializeFirebaseAdmin() {
 
 const UserProfileSchema = z.object({
     displayName: z.string(),
-    tutorTheme: z.enum(['mario', 'sonic']),
+    tutorTheme: z.enum(['mario', 'sonic']).optional(),
 });
 
 const GetUserProfileInputSchema = z.object({
