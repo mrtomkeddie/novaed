@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft, Send, Bot, User, Loader2, CalculatorIcon, X, TimerIcon, Pause, Play, Award, CheckCircle } from 'lucide-react';
@@ -113,58 +113,7 @@ export default function ChatPage() {
   }, [timeRemaining]);
 
 
-  useEffect(() => {
-    if (subject && isInitialLoad.current) {
-        isInitialLoad.current = false; // Prevent this from running on re-renders
-        const startLesson = async () => {
-            setIsLoading(true);
-            let topic: Lesson | null = null;
-            try {
-                const response = await fetch('/api/get-user-progress', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ userId, subjectId: subject.id }),
-                });
-
-                if (response.ok) {
-                  const lastProgress = await response.json();
-                  
-                  if (lastProgress && lastProgress.topic_id) {
-                      const lastTopicIndex = subject.lessons.findIndex(l => l.id === lastProgress.topic_id);
-                      if (lastTopicIndex > -1 && lastTopicIndex + 1 < subject.lessons.length) {
-                          topic = subject.lessons[lastTopicIndex + 1];
-                      } else {
-                          // If last lesson was the final one, start from beginning.
-                          topic = subject.lessons[0];
-                      }
-                  } else {
-                      // No progress found, start with the first lesson.
-                      topic = subject.lessons[0];
-                  }
-                } else {
-                    // API failed, but we can still start the first lesson.
-                    console.warn('Failed to fetch user progress. Starting from first lesson.');
-                    topic = subject.lessons[0];
-                }
-
-                setCurrentTopic(topic);
-                // Immediately get the first message from the tutor
-                await sendUserMessageAndGetFeedback('start', topic);
-
-            } catch (error) {
-                console.error('Error determining lesson start:', error);
-                // Fallback to first lesson even if fetch itself fails
-                topic = subject.lessons[0];
-                setCurrentTopic(topic);
-                await sendUserMessageAndGetFeedback('start', topic);
-            } finally {
-                setIsLoading(false);
-                setIsTimerRunning(true); // Start timer after initial load
-            }
-        };
-        startLesson();
-    }
-  }, [subject]);
+  
 
   useEffect(() => {
     const viewport = scrollAreaRef.current?.querySelector('div[data-radix-scroll-area-viewport]');
@@ -183,7 +132,63 @@ export default function ChatPage() {
     }, 500); // Duration of the animation
   };
 
-  const sendUserMessageAndGetFeedback = async (content: string, topicOverride?: Lesson | null) => {
+  const handleEndLesson = useCallback(async () => {
+    if (!subject || !currentTopic || isLogging) return;
+    setIsTimerRunning(false);
+    setIsLogging(true);
+    toast({
+      title: 'Ending lesson...',
+      description: 'Nova is summarizing your progress.',
+    });
+
+    const simplifiedHistory = messages.map(m => ({
+      role: m.role,
+      content: m.feedback || m.content,
+    }));
+
+    try {
+      const summaryResponse = await fetch('/api/generate-lesson-summary', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          subject: subject.name,
+          topicTitle: currentTopic.title,
+          topicId: currentTopic.id,
+          chatHistory: simplifiedHistory,
+        }),
+      });
+
+      if (!summaryResponse.ok) {
+        throw new Error('Failed to generate lesson summary');
+      }
+
+      const summary = await summaryResponse.json();
+      setLessonSummary(summary);
+
+      const logResponse = await fetch('/api/log-progress', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: userId, summary }),
+      });
+
+      if (!logResponse.ok) {
+        throw new Error('Failed to log progress');
+      }
+
+    } catch (error: any) {
+      console.error('Error ending lesson:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Error Ending Lesson',
+        description: error.message || 'Could not save your progress. Redirecting to dashboard.',
+      });
+      router.push('/dashboard');
+    } finally {
+      setIsLogging(false);
+    }
+  }, [subject, currentTopic, isLogging, messages, router, toast])
+
+  const sendUserMessageAndGetFeedback = useCallback(async (content: string, topicOverride?: Lesson | null) => {
     const topicToUse = topicOverride || currentTopic;
     if (isNovaTyping || isLogging || !subject || !topicToUse) return;
   
@@ -254,64 +259,54 @@ export default function ChatPage() {
     } finally {
       setIsNovaTyping(false);
     }
-  };
+  }, [isNovaTyping, isLogging, subject, currentTopic, lessonPhase, isTimeUp, toast, messages, handleEndLesson]);
 
-  const handleEndLesson = async () => {
-    if (!subject || !currentTopic || isLogging) return;
-    setIsTimerRunning(false);
-    setIsLogging(true);
-    toast({
-      title: 'Ending lesson...',
-      description: 'Nova is summarizing your progress.',
-    });
+  
 
-    const simplifiedHistory = messages.map(m => ({
-        role: m.role,
-        content: m.feedback || m.content,
-    }));
+  useEffect(() => {
+    if (subject && isInitialLoad.current) {
+      isInitialLoad.current = false;
+      const startLesson = async () => {
+        setIsLoading(true);
+        let topic: Lesson | null = null;
+        try {
+          const response = await fetch('/api/get-user-progress', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId, subjectId: subject.id }),
+          });
 
-    try {
-      const summaryResponse = await fetch('/api/generate-lesson-summary', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          subject: subject.name,
-          topicTitle: currentTopic.title,
-          topicId: currentTopic.id,
-          chatHistory: simplifiedHistory,
-        }),
-      });
+          if (response.ok) {
+            const lastProgress = await response.json();
+            if (lastProgress && lastProgress.topic_id) {
+              const lastTopicIndex = subject.lessons.findIndex(l => l.id === lastProgress.topic_id);
+              if (lastTopicIndex > -1 && lastTopicIndex + 1 < subject.lessons.length) {
+                topic = subject.lessons[lastTopicIndex + 1];
+              } else {
+                topic = subject.lessons[0];
+              }
+            } else {
+              topic = subject.lessons[0];
+            }
+          } else {
+            topic = subject.lessons[0];
+          }
 
-      if (!summaryResponse.ok) {
-        throw new Error('Failed to generate lesson summary');
-      }
-
-      const summary = await summaryResponse.json();
-      setLessonSummary(summary);
-      
-      const logResponse = await fetch('/api/log-progress', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: userId, summary }),
-      });
-
-      if (!logResponse.ok) {
-        throw new Error('Failed to log progress');
-      }
-
-    } catch (error: any) {
-      console.error('Error ending lesson:', error);
-      toast({
-        variant: 'destructive',
-        title: 'Error Ending Lesson',
-        description: error.message || 'Could not save your progress. Redirecting to dashboard.',
-      });
-      // Still redirect even if saving fails
-      router.push('/dashboard');
-    } finally {
-      setIsLogging(false);
+          setCurrentTopic(topic);
+          await sendUserMessageAndGetFeedback('start', topic);
+        } catch (error) {
+          console.error('Error determining lesson start:', error);
+          topic = subject.lessons[0];
+          setCurrentTopic(topic);
+          await sendUserMessageAndGetFeedback('start', topic);
+        } finally {
+          setIsLoading(false);
+          setIsTimerRunning(true);
+        }
+      };
+      startLesson();
     }
-  }
+  }, [subject, sendUserMessageAndGetFeedback]);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
