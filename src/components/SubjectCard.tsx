@@ -18,8 +18,8 @@ interface SubjectCardProps {
 
 export default function SubjectCard({ subject }: SubjectCardProps) {
   const Icon = subject?.icon;
-  // Using dummy progress data
-  const progress = Math.floor(Math.random() * 80) + 10; // Random progress between 10-90%
+  const completed = subject.lessons.filter(l => l.completed).length;
+  const progress = subject.lessons.length > 0 ? Math.round((completed / subject.lessons.length) * 100) : 0;
 
   if (!subject) {
     console.error("SubjectCard: subject prop is missing");

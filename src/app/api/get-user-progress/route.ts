@@ -1,4 +1,4 @@
-'use server';
+export const runtime = 'nodejs';
 
 import { NextResponse } from 'next/server';
 import { getLastUserProgress } from '@/ai/flows/get-user-progress';
