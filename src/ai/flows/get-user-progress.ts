@@ -18,8 +18,11 @@ function initializeFirebaseAdmin() {
         return admin.app();
     }
     try {
+        const credential = process.env.FIREBASE_SERVICE_ACCOUNT_JSON
+            ? admin.credential.cert(JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_JSON))
+            : admin.credential.applicationDefault();
         return admin.initializeApp({
-            credential: admin.credential.applicationDefault(),
+            credential,
             projectId: process.env.FIREBASE_PROJECT_ID,
         });
     } catch (e) {
@@ -52,16 +55,28 @@ const getUserProgressFlow = ai.defineFlow(
         console.error("Firebase not initialized, cannot get user progress.");
         return null;
     }
-    const db = admin.firestore();
+    let db: admin.firestore.Firestore;
+    try {
+      db = admin.firestore();
+    } catch (e) {
+      console.error("Firebase Firestore access error:", e);
+      return null;
+    }
 
     const subject = subjects.find(s => s.id === subjectId);
     if (!subject) return null;
 
-    const snapshot = await db.collection('users').doc(userId).collection('progress')
-      .where('subject', '==', subject.name)
-      .orderBy('date', 'desc')
-      .limit(1)
-      .get();
+    let snapshot: FirebaseFirestore.QuerySnapshot<FirebaseFirestore.DocumentData>;
+    try {
+      snapshot = await db.collection('users').doc(userId).collection('progress')
+        .where('subject', '==', subject.name)
+        .orderBy('date', 'desc')
+        .limit(1)
+        .get();
+    } catch (e) {
+      console.error("Firebase query error:", e);
+      return null;
+    }
       
     if (snapshot.empty) {
       return null;
@@ -83,9 +98,21 @@ const getAllUserProgressFlow = ai.defineFlow(
             console.error("Firebase not initialized, cannot get all user progress.");
             return [];
         }
-        const db = admin.firestore();
+    let db: admin.firestore.Firestore;
+    try {
+      db = admin.firestore();
+    } catch (e) {
+      console.error("Firebase Firestore access error:", e);
+      return [];
+    }
         
-        const snapshot = await db.collection('users').doc(userId).collection('progress').get();
+        let snapshot: FirebaseFirestore.QuerySnapshot<FirebaseFirestore.DocumentData>;
+        try {
+          snapshot = await db.collection('users').doc(userId).collection('progress').get();
+        } catch (e) {
+          console.error("Firebase query error:", e);
+          return [];
+        }
         
         if (snapshot.empty) {
             return [];

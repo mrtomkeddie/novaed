@@ -15,8 +15,11 @@ function initializeFirebaseAdmin() {
         return admin.app();
     }
     try {
+        const credential = process.env.FIREBASE_SERVICE_ACCOUNT_JSON
+            ? admin.credential.cert(JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_JSON))
+            : admin.credential.applicationDefault();
         return admin.initializeApp({
-            credential: admin.credential.applicationDefault(),
+            credential,
             projectId: process.env.FIREBASE_PROJECT_ID,
         });
     } catch (e) {

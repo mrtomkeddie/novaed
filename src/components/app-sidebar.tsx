@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Map, LayoutDashboard, Gamepad2, Award, UserCircle2, Settings } from 'lucide-react';
+import { Map, LayoutDashboard, Gamepad2, Award, UserCircle2, Settings, Puzzle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { SheetClose } from './ui/sheet';
 
@@ -21,6 +21,7 @@ export function AppSidebar({ isDrawer = false }: AppSidebarProps) {
     { href: '/curriculum', label: 'Subjects', icon: Map, exact: false },
     { href: '/progress', label: 'Progress', icon: Award, exact: true },
     { href: '/free-play', label: 'Free Play', icon: Gamepad2, exact: true },
+    { href: '/games', label: 'Games', icon: Puzzle, exact: true },
     { href: '/profile', label: 'Profile', icon: UserCircle2, exact: true },
     { href: '/settings', label: 'Settings', icon: Settings, exact: false },
   ];
