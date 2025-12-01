@@ -62,8 +62,6 @@ const aiTutorFeedbackFlow = ai.defineFlow(
   },
   async (input) => {
 
-    // If this is the very first message of the lesson, bypass the AI
-    // and return a hardcoded greeting to ensure a smooth start.
     if (input.chatHistory.length === 1 && input.chatHistory[0].content === 'start') {
         return {
             feedback: `Mamma mia, it's-a time for ${input.subject}! Let's start our adventure into "${input.topicTitle}". I'm-a so excited! What's the first thing that comes to mind when you hear that topic?`,
@@ -100,22 +98,31 @@ const aiTutorFeedbackFlow = ai.defineFlow(
       {{/each}}
     `;
     
-    const { output } = await ai.generate({
-      prompt,
-      model: 'openai/gpt-4o',
-      output: {
-          schema: GetAITutorFeedbackOutputSchema,
-      },
-      context: {
-        chatHistory: input.chatHistory,
-      },
-    });
+    try {
+      const { output } = await ai.generate({
+        prompt,
+        model: 'openai/gpt-4o',
+        output: { schema: GetAITutorFeedbackOutputSchema },
+        context: { chatHistory: input.chatHistory },
+      });
 
-    if (!output) {
-      throw new Error("Failed to get AI tutor feedback.");
+      if (!output) {
+        return {
+          feedback: `Let's continue with "${input.topicTitle}". What do you think about this topic?`,
+          multipleChoiceOptions: null,
+        };
+      }
+      
+      return output;
+    } catch (e) {
+      const lastUser = [...input.chatHistory].reverse().find(m => m.role === 'user');
+      const short = lastUser ? lastUser.content.trim() : '';
+      const isShort = short.length > 0 && short.length <= 24;
+      return {
+        feedback: isShort ? `Did you mean "${short}"? Choose one option.` : `Can you explain a bit more about "${input.topicTitle}"?`,
+        multipleChoiceOptions: isShort ? [short, 'Not sure', 'Something else'] : null,
+      };
     }
-    
-    return output;
   }
 );
 

@@ -128,12 +128,12 @@ function WordSearch({ puzzle, onComplete }: { puzzle: Puzzle; onComplete?: () =>
 
   useEffect(() => {
     if (found.size === puzzle.words.length) {
-      setCongratsOpen(true)
+      const t0 = setTimeout(() => { setCongratsOpen(true) }, 0)
       const t = setTimeout(() => {
         setCongratsOpen(false)
         onComplete && onComplete()
       }, 1800)
-      return () => clearTimeout(t)
+      return () => { clearTimeout(t0); clearTimeout(t) }
     }
   }, [found, puzzle, onComplete])
 

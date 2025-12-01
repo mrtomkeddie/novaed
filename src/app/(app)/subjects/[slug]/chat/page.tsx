@@ -230,6 +230,9 @@ export default function ChatPage() {
       }
   
       const result = await response.json();
+      if (!result || typeof result.feedback !== 'string') {
+        throw new Error('Invalid AI feedback received');
+      }
       
       const assistantMessage: Message = {
         role: 'assistant',
