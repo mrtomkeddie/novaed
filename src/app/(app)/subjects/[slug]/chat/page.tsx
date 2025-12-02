@@ -193,6 +193,12 @@ export default function ChatPage() {
     if (isNovaTyping || isLogging || !subject || !topicToUse) return;
   
     const isFirstInteraction = content === 'start';
+    const normalized = (() => {
+      const s = content.trim().toLowerCase();
+      const uncertain = ['not sure','unsure','idk','i don\'t know','dont know','no idea','?'];
+      if (uncertain.includes(s)) return "I'm not sure. Please give a quick hint.";
+      return content;
+    })();
     let currentMessages = messages;
   
     if (!isFirstInteraction) {
@@ -206,10 +212,15 @@ export default function ChatPage() {
   
     const chatHistoryForApi = isFirstInteraction
       ? [{ role: 'user', content: 'start' }]
-      : currentMessages.map(m => ({
-          role: m.role,
-          content: m.feedback || m.content,
-      }));
+      : (() => {
+          const mapped = currentMessages.map(m => ({
+            role: m.role,
+            content: m.feedback || m.content,
+          }));
+          const last = mapped[mapped.length - 1];
+          if (last && last.role === 'user') last.content = normalized;
+          return mapped;
+        })();
   
     try {
       const response = await fetch('/api/get-ai-tutor-feedback', {

@@ -89,6 +89,9 @@ const aiTutorFeedbackFlow = ai.defineFlow(
       5.  Provide your response in a JSON format with two fields: 'feedback' (your message to the user) and 'multipleChoiceOptions' (an array of strings for the user to choose from, or null if it's an open question).
       6.  If the user's answer is a single word or short phrase, provide 2-4 multiple-choice options.
       7.  If the user gives a detailed answer, ask an open-ended follow-up question and set 'multipleChoiceOptions' to null.
+      8.  If the user expresses uncertainty (e.g., "not sure", "unsure", "idk", "I don't know"), do NOT include variants of uncertainty in 'multipleChoiceOptions'. Instead, give a short hint and ask a simpler follow-up.
+      9.  Do not repeat the exact same question as your previous message. Make each follow-up progress the lesson.
+      10. Ensure 'multipleChoiceOptions' are unique case-insensitively; avoid duplicates.
       
       Analyze the chat history and provide the next message based on all the instructions above.
 
@@ -117,10 +120,24 @@ const aiTutorFeedbackFlow = ai.defineFlow(
     } catch (e) {
       const lastUser = [...input.chatHistory].reverse().find(m => m.role === 'user');
       const short = lastUser ? lastUser.content.trim() : '';
+      const norm = short.toLowerCase();
+      const uncertain = ['not sure','unsure','idk','i don\'t know','dont know','no idea','?'].includes(norm);
+      if (uncertain) {
+        return {
+          feedback: `No problem. Would you like a hint, an example, or an easier question?`,
+          multipleChoiceOptions: ['Give me a hint','Explain with example','Ask an easier question'],
+        };
+      }
       const isShort = short.length > 0 && short.length <= 24;
+      if (isShort) {
+        return {
+          feedback: `Okay. What do you think about "${short}"?`,
+          multipleChoiceOptions: null,
+        };
+      }
       return {
-        feedback: isShort ? `Did you mean "${short}"? Choose one option.` : `Can you explain a bit more about "${input.topicTitle}"?`,
-        multipleChoiceOptions: isShort ? [short, 'Not sure', 'Something else'] : null,
+        feedback: `Can you explain a bit more about "${input.topicTitle}"?`,
+        multipleChoiceOptions: null,
       };
     }
   }
