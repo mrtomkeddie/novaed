@@ -244,6 +244,13 @@ export default function ChatPage() {
       if (!result || typeof result.feedback !== 'string') {
         throw new Error('Invalid AI feedback received');
       }
+      if (result.insufficientQuota) {
+        toast({
+          variant: 'destructive',
+          title: 'Out of AI Credits',
+          description: 'The tutor is temporarily using a simplified fallback. Full features will resume when credits are topped up.',
+        });
+      }
       
       const assistantMessage: Message = {
         role: 'assistant',

@@ -12,6 +12,31 @@ import { sciencePrompt } from '@/data/prompts/science';
 import { englishPrompt } from '@/data/prompts/english';
 import { creatorPrompt } from '@/data/prompts/creator';
 
+const extractNumbers = (text: string): number[] => {
+  const matches = text.match(/\d+/g);
+  if (!matches) return [];
+  return matches.map((n) => parseInt(n, 10));
+};
+
+const detectOperation = (text: string): 'add' | 'sub' | null => {
+  const t = text.toLowerCase();
+  if (/(spend|spent|lose|used|left|minus|take away|remove)/.test(t)) return 'sub';
+  if (/(add|gain|collect|find|more|plus|get)/.test(t)) return 'add';
+  return null;
+};
+
+const buildOptions = (correct: number, userGuess?: number): string[] => {
+  const opts = new Set<number>();
+  opts.add(correct);
+  if (typeof userGuess === 'number') opts.add(userGuess);
+  while (opts.size < 4) {
+    const delta = Math.max(1, Math.floor(Math.random() * 3));
+    const candidate = Math.random() < 0.5 ? correct + delta : correct - delta;
+    if (candidate >= 0) opts.add(candidate);
+  }
+  return Array.from(opts).slice(0, 4).map((n) => `${n}`);
+};
+
 // Define the structure for a single message in the chat history.
 const ChatMessageSchema = z.object({
   role: z.enum(['user', 'assistant']),
@@ -31,6 +56,7 @@ const GetAITutorFeedbackInputSchema = z.object({
 const GetAITutorFeedbackOutputSchema = z.object({
   feedback: z.string().describe("The AI tutor's next message to the user."),
   multipleChoiceOptions: z.array(z.string()).nullable().describe('An optional list of multiple-choice answers for the user.'),
+  insufficientQuota: z.boolean().optional().describe('True if the AI provider reported insufficient quota.'),
 });
 export type GetAITutorFeedbackOutput = z.infer<typeof GetAITutorFeedbackOutputSchema>;
 
@@ -118,26 +144,62 @@ const aiTutorFeedbackFlow = ai.defineFlow(
       
       return output;
     } catch (e) {
-      const lastUser = [...input.chatHistory].reverse().find(m => m.role === 'user');
-      const short = lastUser ? lastUser.content.trim() : '';
-      const norm = short.toLowerCase();
+      const es = String(e ?? '').toLowerCase();
+      const quotaErr = es.includes('insufficient_quota') || es.includes('exceeded your current quota') || es.includes('quota');
+      const lastUser = [...input.chatHistory].reverse().find((m) => m.role === 'user');
+      const lastAssistant = [...input.chatHistory].reverse().find((m) => m.role === 'assistant');
+      const userText = lastUser ? lastUser.content.trim() : '';
+      const norm = userText.toLowerCase();
       const uncertain = ['not sure','unsure','idk','i don\'t know','dont know','no idea','?'].includes(norm);
       if (uncertain) {
         return {
-          feedback: `No problem. Would you like a hint, an example, or an easier question?`,
+          feedback: `Okey-dokey! Want a hint, an example, or an easier question?`,
           multipleChoiceOptions: ['Give me a hint','Explain with example','Ask an easier question'],
+          insufficientQuota: quotaErr || undefined,
         };
       }
-      const isShort = short.length > 0 && short.length <= 24;
+
+      const isMath = input.subject.toLowerCase().includes('math');
+      if (isMath && lastAssistant) {
+        const op = detectOperation(lastAssistant.content);
+        const nums = extractNumbers(lastAssistant.content);
+        const userNums = extractNumbers(userText);
+        if (op && nums.length >= 2 && userNums.length >= 1) {
+          const a = nums[0];
+          const b = nums[1];
+          const expected = op === 'sub' ? a - b : a + b;
+          const guess = userNums[0];
+          if (guess === expected) {
+            const followA = Math.max(1, expected);
+            const followB = Math.min(9, Math.max(1, Math.floor(Math.random() * 5) + 1));
+            const followAns = followA + followB;
+            return {
+              feedback: `Wahoo! Correct: ${expected}. +10 XP! If you have ${followA} coins and find ${followB} more, how many now?`,
+              multipleChoiceOptions: buildOptions(followAns),
+              insufficientQuota: quotaErr || undefined,
+            };
+          } else {
+            return {
+              feedback: `Boop! Not quite. Start with ${a}, ${op === 'sub' ? 'spend' : 'add'} ${b}. How many coins do you have ${op === 'sub' ? 'left' : 'now'}?`,
+              multipleChoiceOptions: buildOptions(expected, guess),
+              insufficientQuota: quotaErr || undefined,
+            };
+          }
+        }
+      }
+
+      const isShort = userText.length > 0 && userText.length <= 24;
       if (isShort) {
         return {
-          feedback: `Okay. What do you think about "${short}"?`,
-          multipleChoiceOptions: null,
+          feedback: `Got it. Want a hint, an example, or a multiple-choice follow-up?`,
+          multipleChoiceOptions: ['Give me a hint','Explain with example','Give multiple choice','Ask an easier question'],
+          insufficientQuota: quotaErr || undefined,
         };
       }
       return {
-        feedback: `Can you explain a bit more about "${input.topicTitle}"?`,
+        feedback: `Interesting. Tell me a bit more so I can tailor the next challenge. What would you add?`,
         multipleChoiceOptions: null,
+        insufficientQuota: quotaErr || undefined,
       };
     }
   }
