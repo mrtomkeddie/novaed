@@ -119,6 +119,9 @@ const aiTutorFeedbackFlow = ai.defineFlow(
     const subjectPrompt = getSubjectPrompt(input.subject);
     
     // The prompt now combines the master instructions with the subject-specific module.
+    // Manually render chat history to ensure it's visible to the LLM, avoiding potential templating issues.
+    const historyText = input.chatHistory.map(m => `${m.role.toUpperCase()}: ${m.content}`).join('\n');
+
     const prompt = `
       ${masterPrompt}
 
@@ -143,9 +146,7 @@ const aiTutorFeedbackFlow = ai.defineFlow(
       Analyze the chat history and provide the next message based on all the instructions above.
 
       Chat History:
-      {{#each chatHistory}}
-      {{role}}: {{content}}
-      {{/each}}
+      ${historyText}
     `;
     
     try {
@@ -153,6 +154,7 @@ const aiTutorFeedbackFlow = ai.defineFlow(
         prompt,
         model: 'openai/gpt-4o',
         output: { schema: GetAITutorFeedbackOutputSchema },
+        // Context is no longer needed for templating, but kept if used for other middleware
         context: { chatHistory: input.chatHistory },
       });
 
@@ -165,6 +167,10 @@ const aiTutorFeedbackFlow = ai.defineFlow(
       
       return output;
     } catch (e) {
+      console.error('AI Generation Error:', e);
+      const errorMsg = msg(e);
+      console.error('Error Message:', errorMsg);
+
       let quotaErr = isQuotaError(e);
       if (isAccessOrModelError(e) || isRateLimitError(e) || quotaErr) {
         try {
