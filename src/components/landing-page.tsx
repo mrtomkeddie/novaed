@@ -44,7 +44,6 @@ export function LandingPage() {
                             height={32} 
                             className="w-8 h-8 object-contain"
                         />
-                        NovaEd
                     </div>
                     <div className="flex items-center gap-4">
                         <div className="hidden sm:flex items-center gap-2 text-sm text-muted-foreground">
@@ -103,33 +102,35 @@ export function LandingPage() {
 
                 {/* Features Grid */}
                 <section className="py-20 bg-muted/30 border-y">
-                    <div className="grid md:grid-cols-3 gap-8">
-                        <div className="space-y-4 p-6 rounded-xl border bg-card/50">
-                            <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/20 text-blue-600 rounded-lg flex items-center justify-center">
-                                <BrainCircuit className="w-6 h-6" />
+                    <div className="container mx-auto px-4">
+                        <div className="grid md:grid-cols-3 gap-8">
+                            <div className="space-y-4 p-6 rounded-xl border bg-card/50">
+                                <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/20 text-blue-600 rounded-lg flex items-center justify-center">
+                                    <BrainCircuit className="w-6 h-6" />
+                                </div>
+                                <h3 className="text-xl font-bold">Adaptive AI Tutor</h3>
+                                <p className="text-muted-foreground">
+                                    Gets to know your learning style and adapts explanations to help you master every topic.
+                                </p>
                             </div>
-                            <h3 className="text-xl font-bold">Adaptive AI Tutor</h3>
-                            <p className="text-muted-foreground">
-                                Gets to know your learning style and adapts explanations to help you master every topic.
-                            </p>
-                        </div>
-                        <div className="space-y-4 p-6 rounded-xl border bg-card/50">
-                            <div className="w-12 h-12 bg-green-100 dark:bg-green-900/20 text-green-600 rounded-lg flex items-center justify-center">
-                                <BookOpen className="w-6 h-6" />
+                            <div className="space-y-4 p-6 rounded-xl border bg-card/50">
+                                <div className="w-12 h-12 bg-green-100 dark:bg-green-900/20 text-green-600 rounded-lg flex items-center justify-center">
+                                    <BookOpen className="w-6 h-6" />
+                                </div>
+                                <h3 className="text-xl font-bold">Curriculum Aligned</h3>
+                                <p className="text-muted-foreground">
+                                    Lessons that match your exact school curriculum, so you're always learning what matters.
+                                </p>
                             </div>
-                            <h3 className="text-xl font-bold">Curriculum Aligned</h3>
-                            <p className="text-muted-foreground">
-                                Lessons that match your exact school curriculum, so you're always learning what matters.
-                            </p>
-                        </div>
-                         <div className="space-y-4 p-6 rounded-xl border bg-card/50">
-                            <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/20 text-purple-600 rounded-lg flex items-center justify-center">
-                                <Sparkles className="w-6 h-6" />
+                            <div className="space-y-4 p-6 rounded-xl border bg-card/50">
+                                <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/20 text-purple-600 rounded-lg flex items-center justify-center">
+                                    <Sparkles className="w-6 h-6" />
+                                </div>
+                                <h3 className="text-xl font-bold">Gamified Learning</h3>
+                                <p className="text-muted-foreground">
+                                    Earn XP, level up, and complete quests. Learning feels less like work and more like play.
+                                </p>
                             </div>
-                            <h3 className="text-xl font-bold">Gamified Learning</h3>
-                            <p className="text-muted-foreground">
-                                Earn XP, level up, and complete quests. Learning feels less like work and more like play.
-                            </p>
                         </div>
                     </div>
                  </section>
