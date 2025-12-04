@@ -3,13 +3,13 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { getISOWeek } from 'date-fns';
 import { subjects } from "@/data/subjects";
 import { timetableData } from "@/components/timetable";
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Timetable } from '@/components/timetable';
-import { ArrowRight, Gamepad2, SkipForward, CalendarDays, CheckCircle, RefreshCw, Loader2, Trophy } from 'lucide-react';
+import { ArrowRight, Gamepad2, SkipForward, CheckCircle, RefreshCw, Loader2, Trophy } from 'lucide-react';
 import type { Subject, UserProfile } from '@/types';
 import type { GenerateLessonSummaryOutput } from '@/ai/flows/generate-lesson-summary';
 import { useToast } from '@/hooks/use-toast';
@@ -28,12 +28,23 @@ export function DashboardClient() {
   const [greeting, setGreeting] = useState("Welcome");
   const [welcomeName, setWelcomeName] = useState('...');
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedWeek, setSelectedWeek] = useState(1);
   const [isLoadingProfile, setIsLoadingProfile] = useState(true);
+  const [currentDay, setCurrentDay] = useState<string>("");
+  const [currentWeekNumber, setCurrentWeekNumber] = useState(1);
 
   useEffect(() => {
     setIsLoading(true);
+    const today = new Date();
+    const dayName = today.toLocaleDateString('en-US', { weekday: 'long' });
+    setCurrentDay(dayName);
     
+    // Calculate current week number (1 or 2) based on ISO week
+    const isoWeek = getISOWeek(today);
+    // Assuming odd ISO weeks are Week 1 and even ISO weeks are Week 2
+    // This cycles automatically every week.
+    const weekNum = isoWeek % 2 !== 0 ? 1 : 2;
+    setCurrentWeekNumber(weekNum);
+
     async function fetchData() {
         setIsLoadingProfile(true);
         try {
@@ -53,11 +64,10 @@ export function DashboardClient() {
         }
 
         // Determine today's lessons from timetable
-        const today = new Date().toLocaleDateString('en-US', { weekday: 'long' });
         
-        // For simplicity, we'll just use week 1's schedule for the dashboard logic
-        const week1Data = timetableData.find(w => w.week === 1);
-        const scheduledLessons = week1Data?.days.find(d => d.day === today)?.periods || [];
+        // Use the calculated currentWeekNumber to fetch the correct schedule
+        const weekData = timetableData.find(w => w.week === weekNum);
+        const scheduledLessons = weekData?.days.find(d => d.day === dayName)?.periods || [];
         
         const lessonsWithSubjects: DailyLesson[] = scheduledLessons.map(lessonName => {
             if (!lessonName) return null;
@@ -236,37 +246,35 @@ export function DashboardClient() {
             )}
           </section>
 
+          <section className="max-w-4xl mx-auto mb-10 space-y-8">
+             <Card>
+                <CardHeader>
+                    <CardTitle>Week 1</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <Timetable 
+                        selectedWeek={1} 
+                        currentDay={currentWeekNumber === 1 ? currentDay : undefined}
+                        currentLessonIndex={currentWeekNumber === 1 ? currentLessonIndex : undefined}
+                    />
+                </CardContent>
+             </Card>
+
+             <Card>
+                <CardHeader>
+                    <CardTitle>Week 2</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <Timetable 
+                        selectedWeek={2}
+                        currentDay={currentWeekNumber === 2 ? currentDay : undefined}
+                        currentLessonIndex={currentWeekNumber === 2 ? currentLessonIndex : undefined}
+                    />
+                </CardContent>
+             </Card>
+          </section>
+
           <div className="flex justify-center items-center gap-4">
-              <Dialog>
-                  <DialogTrigger asChild>
-                      <Button variant="ghost">
-                          <CalendarDays className="mr-2" />
-                          View Full Timetable
-                      </Button>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-[95vw] sm:max-w-5xl">
-                      <DialogHeader>
-                          <DialogTitle>Weekly Timetable</DialogTitle>
-                           <div className="flex items-center gap-2 pt-2">
-                                <Button
-                                    variant={selectedWeek === 1 ? 'default' : 'outline'}
-                                    size="sm"
-                                    onClick={() => setSelectedWeek(1)}
-                                >
-                                    Week 1
-                                </Button>
-                                <Button
-                                    variant={selectedWeek === 2 ? 'default' : 'outline'}
-                                    size="sm"
-                                    onClick={() => setSelectedWeek(2)}
-                                >
-                                    Week 2
-                                </Button>
-                            </div>
-                      </DialogHeader>
-                      <Timetable selectedWeek={selectedWeek} />
-                  </DialogContent>
-              </Dialog>
               {currentLessonIndex > 0 && (
                 <Button variant="ghost" onClick={handleResetProgress}>
                     <RefreshCw className="mr-2" />

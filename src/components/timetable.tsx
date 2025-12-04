@@ -43,24 +43,15 @@ export const timetableData: TimetableData = [
     }
 ];
 
-export const colorMap: { [key: string]: string } = {
-    'maths (core)': '#529E72',
-    'maths (applied)': '#C77D48',
-    'english a (grammar)': '#E65B58',
-    'english b (comprehension)': '#379AD3',
-    'biology': '#9D68D3',
-    'physics': '#D8A7B1',
-    'chemistry': '#A8B5A2',
-    'synthesis': '#4AB473', // A new color for Synthesis
-};
-
 const lessonTimes = ['9:30 - 9:55 AM', '10:00 - 10:25 AM', '10:30 - 10:55 AM'];
 
 interface TimetableProps {
     selectedWeek: number;
+    currentDay?: string;
+    currentLessonIndex?: number;
 }
 
-export function Timetable({ selectedWeek }: TimetableProps) {
+export function Timetable({ selectedWeek, currentDay, currentLessonIndex }: TimetableProps) {
     const weekData = timetableData.find(w => w.week === selectedWeek);
 
     return (
@@ -77,7 +68,9 @@ export function Timetable({ selectedWeek }: TimetableProps) {
                   </TableRow>
               </TableHeader>
               <TableBody>
-                  {weekData?.days.map((dayData) => (
+                  {weekData?.days.map((dayData) => {
+                      const isToday = dayData.day === currentDay;
+                      return (
                       <TableRow key={dayData.day}>
                           <TableCell className="font-medium text-muted-foreground">
                               {dayData.day}
@@ -87,18 +80,22 @@ export function Timetable({ selectedWeek }: TimetableProps) {
                                     return <TableCell key={periodIndex}></TableCell>; // Empty cell if no lesson
                                 }
 
-                                const lookupKey = period.toLowerCase().trim();
-                                const colorValue = colorMap[lookupKey];
-                                const style: React.CSSProperties = colorValue ? { color: colorValue } : {};
+                                const isCurrentLesson = isToday && periodIndex === currentLessonIndex;
                                 
                                 return (
-                                    <TableCell key={periodIndex} className="text-center font-semibold" style={style}>
+                                    <TableCell 
+                                        key={periodIndex} 
+                                        className={cn(
+                                            "text-center font-semibold text-foreground", // Force white/foreground text
+                                            isCurrentLesson && "bg-primary/10 rounded-md" // Highlight current lesson (Subtle)
+                                        )}
+                                    >
                                         {period}
                                     </TableCell>
                                 )
                           })}
                       </TableRow>
-                  ))}
+                  )})}
               </TableBody>
           </Table>
         </div>
