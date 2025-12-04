@@ -55,9 +55,9 @@ export function LandingPage() {
         <div className="min-h-screen bg-background flex flex-col">
             {/* Navbar */}
             <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-50">
-                <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+                <div className="container mx-auto px-4 h-24 flex items-center justify-between">
                     <div className="flex items-center gap-2 font-bold text-xl tracking-tight">
-                        <div className="relative w-20 h-20">
+                        <div className="relative w-32 h-32">
                             <Image 
                                 src="/logo.png" 
                                 alt="NovaEd Logo" 
