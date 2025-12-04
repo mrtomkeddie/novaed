@@ -111,7 +111,7 @@ const aiTutorFeedbackFlow = ai.defineFlow(
 
     if (input.chatHistory.length === 1 && input.chatHistory[0].content === 'start') {
         return {
-            feedback: `Mamma mia, it's-a time for ${input.subject}! Let's start our adventure into "${input.topicTitle}". I'm-a so excited! What's the first thing that comes to mind when you hear that topic?`,
+            feedback: `Welcome back! It's time for ${input.subject} 🎓. Let's start our adventure into "${input.topicTitle}" 🚀. I'm ready when you are! What's the first thing that comes to mind when you hear that topic? 🤔`,
             multipleChoiceOptions: null,
         };
     }
@@ -192,7 +192,7 @@ const aiTutorFeedbackFlow = ai.defineFlow(
       const uncertain = ['not sure','unsure','idk','i don\'t know','dont know','no idea','?'].includes(norm);
       if (uncertain) {
         return {
-          feedback: `Okey-dokey! Want a hint, an example, or an easier question?`,
+          feedback: `No worries! Want a hint, an example, or an easier question? 🤔`,
           multipleChoiceOptions: ['Give me a hint','Explain with example','Ask an easier question'],
           insufficientQuota: quotaErr || undefined,
         };
@@ -213,13 +213,13 @@ const aiTutorFeedbackFlow = ai.defineFlow(
             const followB = Math.min(9, Math.max(1, Math.floor(Math.random() * 5) + 1));
             const followAns = followA + followB;
             return {
-              feedback: `Wahoo! Correct: ${expected}. +10 XP! If you have ${followA} coins and find ${followB} more, how many now?`,
+              feedback: `That's correct! The answer is ${expected}. +10 XP! ⭐ If you have ${followA} coins and find ${followB} more, how many now? 🪙`,
               multipleChoiceOptions: buildOptions(followAns),
               insufficientQuota: quotaErr || undefined,
             };
           } else {
             return {
-              feedback: `Boop! Not quite. Start with ${a}, ${op === 'sub' ? 'spend' : 'add'} ${b}. How many coins do you have ${op === 'sub' ? 'left' : 'now'}?`,
+              feedback: `Not quite! Start with ${a}, ${op === 'sub' ? 'spend' : 'add'} ${b}. How many coins do you have ${op === 'sub' ? 'left' : 'now'}? 🤔`,
               multipleChoiceOptions: buildOptions(expected, guess),
               insufficientQuota: quotaErr || undefined,
             };
@@ -230,7 +230,7 @@ const aiTutorFeedbackFlow = ai.defineFlow(
       const isShort = userText.length > 0 && userText.length <= 24;
       if (isShort) {
         return {
-          feedback: `Got it. Want a hint, an example, or a multiple-choice follow-up?`,
+          feedback: `Got it. Want a hint, an example, or a multiple-choice follow-up? 🌟`,
           multipleChoiceOptions: ['Give me a hint','Explain with example','Give multiple choice','Ask an easier question'],
           insufficientQuota: quotaErr || undefined,
         };

@@ -80,6 +80,18 @@ export default function ChatPage() {
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const isInitialLoad = useRef(true);
 
+  // Prevent accidental tab closing
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (isLogging || messages.length === 0) return; // Don't block if just starting or already saving
+      e.preventDefault();
+      e.returnValue = ''; // Required for Chrome
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [messages, isLogging]);
+
   // Timer effect
   useEffect(() => {
     if (!isTimerRunning || isLogging) return;
