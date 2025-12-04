@@ -37,6 +37,27 @@ const buildOptions = (correct: number, userGuess?: number): string[] => {
   return Array.from(opts).slice(0, 4).map((n) => `${n}`);
 };
 
+const msg = (e: unknown): string => {
+  const anyE: any = e as any;
+  if (anyE && typeof anyE.message === 'string') return anyE.message;
+  return String(e ?? '');
+};
+
+const isQuotaError = (e: unknown): boolean => {
+  const s = msg(e).toLowerCase();
+  return s.includes('insufficient_quota') || s.includes('exceeded your current quota');
+};
+
+const isRateLimitError = (e: unknown): boolean => {
+  const s = msg(e).toLowerCase();
+  return s.includes('rate limit');
+};
+
+const isAccessOrModelError = (e: unknown): boolean => {
+  const s = msg(e).toLowerCase();
+  return s.includes('model_not_found') || s.includes('does not exist') || s.includes('not found') || s.includes('access');
+};
+
 // Define the structure for a single message in the chat history.
 const ChatMessageSchema = z.object({
   role: z.enum(['user', 'assistant']),
@@ -144,8 +165,20 @@ const aiTutorFeedbackFlow = ai.defineFlow(
       
       return output;
     } catch (e) {
-      const es = String(e ?? '').toLowerCase();
-      const quotaErr = es.includes('insufficient_quota') || es.includes('exceeded your current quota') || es.includes('quota');
+      let quotaErr = isQuotaError(e);
+      if (isAccessOrModelError(e) || isRateLimitError(e) || quotaErr) {
+        try {
+          const { output } = await ai.generate({
+            prompt,
+            model: 'openai/gpt-4o-mini',
+            output: { schema: GetAITutorFeedbackOutputSchema },
+            context: { chatHistory: input.chatHistory },
+          });
+          if (output) return output;
+        } catch (e2) {
+          quotaErr = quotaErr || isQuotaError(e2);
+        }
+      }
       const lastUser = [...input.chatHistory].reverse().find((m) => m.role === 'user');
       const lastAssistant = [...input.chatHistory].reverse().find((m) => m.role === 'assistant');
       const userText = lastUser ? lastUser.content.trim() : '';
