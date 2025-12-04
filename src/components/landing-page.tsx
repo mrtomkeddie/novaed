@@ -15,20 +15,40 @@ export function LandingPage() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const { toast } = useToast();
 
-    const handleJoinWaitlist = (e: React.FormEvent) => {
+    const handleJoinWaitlist = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!email) return;
 
         setIsSubmitting(true);
-        // Simulate API call
-        setTimeout(() => {
-            setIsSubmitting(false);
-            setEmail('');
-            toast({
-                title: "You're on the list! 🚀",
-                description: "We'll keep you posted on new updates and features.",
+        
+        try {
+            const response = await fetch("https://formspree.io/f/xzznvezq", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                },
+                body: JSON.stringify({ email })
             });
-        }, 1000);
+
+            if (response.ok) {
+                setIsSubmitting(false);
+                setEmail('');
+                toast({
+                    title: "You're on the list! 🚀",
+                    description: "We'll keep you posted on new updates and features.",
+                });
+            } else {
+                throw new Error("Failed to submit");
+            }
+        } catch (error) {
+            setIsSubmitting(false);
+            toast({
+                title: "Something went wrong",
+                description: "Please try again later.",
+                variant: "destructive"
+            });
+        }
     };
 
     return (
@@ -40,9 +60,9 @@ export function LandingPage() {
                         <Image 
                             src="/logo.png" 
                             alt="NovaEd Logo" 
-                            width={32} 
-                            height={32} 
-                            className="w-8 h-8 object-contain"
+                            width={48} 
+                            height={48} 
+                            className="w-12 h-12 object-contain"
                         />
                     </div>
                     <div className="flex items-center gap-4">
@@ -50,7 +70,7 @@ export function LandingPage() {
                              <Badge variant="secondary" className="font-normal">Beta v0.1</Badge>
                         </div>
                         <Button asChild variant="ghost">
-                            <Link href="/dashboard">Login</Link>
+                            <Link href="/login">Login</Link>
                         </Button>
                     </div>
                 </div>
