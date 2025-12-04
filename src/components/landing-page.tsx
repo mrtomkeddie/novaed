@@ -57,13 +57,14 @@ export function LandingPage() {
             <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-50">
                 <div className="container mx-auto px-4 h-16 flex items-center justify-between">
                     <div className="flex items-center gap-2 font-bold text-xl tracking-tight">
-                        <Image 
-                            src="/logo.png" 
-                            alt="NovaEd Logo" 
-                            width={48} 
-                            height={48} 
-                            className="w-12 h-12 object-contain"
-                        />
+                        <div className="relative w-20 h-20">
+                            <Image 
+                                src="/logo.png" 
+                                alt="NovaEd Logo" 
+                                fill
+                                className="object-contain"
+                            />
+                        </div>
                     </div>
                     <div className="flex items-center gap-4">
                         <div className="hidden sm:flex items-center gap-2 text-sm text-muted-foreground">
